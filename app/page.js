@@ -3,9 +3,10 @@
 import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
-import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight } from "lucide-react";
+import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
 import ElementDrawer from "../components/ElementDrawer";
+import { elementsData } from "../data/elements";
 
 const loading = () => <p role="status" className="glass-panel rounded-2xl p-8">Loading your workspace…</p>;
 const ChemistryWorkspace = dynamic(() => import("../components/ChemistryWorkspace"), { loading });
@@ -57,6 +58,13 @@ export default function Home() {
     selectTab(tabs[next].id);
     document.getElementById(`tab-${tabs[next].id}`)?.focus();
   };
+  const exploreElements = () => {
+    selectTab("table");
+    requestAnimationFrame(() => {
+      document.querySelector("#panel-table input")?.focus({ preventScroll: true });
+      document.getElementById("main-content")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    });
+  };
   const toggleTheme = () => {
     memoryTheme = theme === "dark" ? "light" : "dark";
     try { localStorage.setItem("theme", memoryTheme); } catch { /* Keep the in-memory preference. */ }
@@ -76,12 +84,30 @@ export default function Home() {
             {theme === "dark" ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
           </button>
         </header>
-        <div className="intro no-print">
-          <p className="eyebrow"><span /> YOUR DIGITAL CHEMISTRY LAB</p>
-          <h1>Small atoms.<br className="sm:hidden" /> <span>Big discoveries.</span></h1>
-          <p className="intro-description">Explore, experiment, and understand — one element at a time.</p>
-          <div className="intro-facts"><span>118 elements</span><span>Interactive tools</span><span>Print-ready practice</span></div>
-        </div>
+        <section className="intro no-print" aria-labelledby="hero-title">
+          <div className="hero-copy">
+            <p className="eyebrow"><FlaskConical size={14} aria-hidden="true" /> A SPACE FOR YOUR CURIOSITY</p>
+            <h1 id="hero-title">Small atoms.<br /><span>Big discoveries.</span></h1>
+            <p className="intro-description">Meet the elements. Make sense of reactions. Bring chemistry into focus with a lab that lets you explore.</p>
+            <button type="button" className="hero-action" onClick={exploreElements}>Explore the elements <ArrowRight size={17} aria-hidden="true" /></button>
+            <div className="intro-facts"><span><strong>118</strong> elements</span><span><strong>4</strong> chemistry tools</span><span>Made to explore</span></div>
+          </div>
+          <div className="hero-discovery" aria-label="Featured elements">
+            <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
+            <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
+            <span className="discovery-kicker">THE BUILDING BLOCKS OF EVERYTHING</span>
+            <div className="discovery-elements">
+              {[1, 6, 8].map(number => {
+                const element = elementsData[number - 1];
+                return <button type="button" key={number} className={`discovery-element discovery-element-${element.symbol}`} onClick={() => setSelectedElement(element)} aria-label={`Explore ${element.name}`} aria-haspopup="dialog">
+                  <span className="discovery-number">{String(number).padStart(2, '0')}<ArrowUpRight size={14} aria-hidden="true" /></span>
+                  <strong>{element.symbol}</strong><span className="discovery-name">{element.name}</span><span className="discovery-mass">{element.mass.toFixed(3)} u</span>
+                </button>;
+              })}
+            </div>
+            <span className="discovery-caption"><span aria-hidden="true" /> A whole universe, one element at a time.</span>
+          </div>
+        </section>
         <nav aria-label="Lab sections" className="lab-navigation no-print">
           <div role="tablist" aria-label="Chemistry workspaces" className="lab-tabs">
             {tabs.map(({ id, label, icon: Icon }, index) => (
@@ -100,9 +126,15 @@ export default function Home() {
           ))}
         </main>
         <footer className="site-footer no-print">
-          <p>Rasayan Lab <span>·</span> Made for curious minds by ayvalor.</p>
-          <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
-          <p className="footer-note">Educational models and reference data. Check element notes for isotope values and unmeasured properties.</p>
+          <div className="footer-top">
+            <div className="footer-identity"><span className="footer-mark"><Atom size={22} aria-hidden="true" /></span><div><strong>Rasayan Lab</strong><p>Stay curious. Keep discovering.</p></div></div>
+            <nav className="footer-links" aria-label="Footer workspaces">
+              <button type="button" onClick={exploreElements}>Explore elements</button>
+              <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
+            </nav>
+          </div>
+          <div className="footer-bottom"><p>Designed &amp; built by <strong>ayvalor</strong></p><p>Made for learning. Open to everyone.</p></div>
+          <p className="footer-note">Educational models and reference data. Element notes identify isotope values, predictions, and properties that have not been measured.</p>
         </footer>
         <ElementDrawer element={selectedElement} onClose={closeDrawer} />
       </div>

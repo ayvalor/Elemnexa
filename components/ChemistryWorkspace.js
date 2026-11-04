@@ -1,330 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useState } from "react";
+import AtomShowcase from "./AtomShowcase";
+import "./atom-showcase.css";
 import { elementsData } from "../data/elements";
-import { Play, Pause, Plus, Minus, Calculator, RefreshCw, Table2, ShieldAlert, X } from "lucide-react";
+import { Play, Calculator, RefreshCw, Table2, ShieldAlert, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { balanceEquation, calculateMolarMass, getSolubility, getElectronShells, cationsList, anionsList, ionLabels } from "../lib/chemistry.mjs";
-
-// Custom 360° Interactive 3D Atom Showcase Canvas Component
-function InteractiveAtom3D({ protons, neutrons, electrons, isPlaying, speed }) {
-  const canvasRef = useRef(null);
-  const rotationRef = useRef({ x: 0.5, y: 0.5 });
-  const mouseRef = useRef({ isDragging: false, startX: 0, startY: 0 });
-  const timeRef = useRef(0);
-  const redrawRef = useRef(() => {});
-
-  // Memoize stable 3D nucleus coordinates so they don't jump around
-  const nucleusParticles = useMemo(() => {
-    const particles = [];
-    const count = protons + neutrons;
-    if (count <= 0) return particles;
-    for (let i = 0; i < count; i++) {
-      const isProton = i < protons;
-      // Spherical distribution using spiral/golden coordinates
-      const theta = i * 2.39996; // Golden angle
-      const phi = Math.acos(1 - (2 * (i + 0.5)) / count);
-      const r = Math.min(16, Math.sqrt(i) * 2.8 + 4);
-      
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-      particles.push({ x, y, z, isProton });
-    }
-    return particles;
-  }, [protons, neutrons]);
-
-  const shells = useMemo(() => getElectronShells(protons, electrons), [protons, electrons]);
-
-  const handlePointerDown = (event) => {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    mouseRef.current = { isDragging: true, startX: event.clientX, startY: event.clientY };
-  };
-  const handlePointerMove = (event) => {
-    if (!mouseRef.current.isDragging) return;
-    rotationRef.current.y += (event.clientX - mouseRef.current.startX) * 0.008;
-    rotationRef.current.x += (event.clientY - mouseRef.current.startY) * 0.008;
-    mouseRef.current.startX = event.clientX;
-    mouseRef.current.startY = event.clientY;
-    redrawRef.current();
-  };
-  const handlePointerUp = () => { mouseRef.current.isDragging = false; };
-  const handleKeyDown = (event) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(event.key)) return;
-    event.preventDefault();
-    if (event.key === 'Home') rotationRef.current = { x: 0.5, y: 0.5 };
-    if (event.key === 'ArrowLeft') rotationRef.current.y -= 0.1;
-    if (event.key === 'ArrowRight') rotationRef.current.y += 0.1;
-    if (event.key === 'ArrowUp') rotationRef.current.x -= 0.1;
-    if (event.key === 'ArrowDown') rotationRef.current.x += 0.1;
-    redrawRef.current();
-  };
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let localFrameId = null;
-    let previousTime = null;
-    let isVisible = true;
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = 360 * ratio;
-    canvas.height = 360 * ratio;
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-
-    const render = (timestamp) => {
-      localFrameId = null;
-      // Clear canvas
-      ctx.clearRect(0, 0, 360, 360);
-      const cx = 180;
-      const cy = 180;
-
-      // Dynamic auto-scaling based on shells to fit 75%-85% viewport (radius ~38% of width)
-      const totalShells = shells.length || 1;
-      const spacePerShell = 20;
-      const maxOrbitRadius = 45 + (totalShells - 1) * spacePerShell;
-      const maxBoundary = maxOrbitRadius + 6; // Radius + outermost electron particle boundary
-      
-      // Calculate scale factor relative to target padded radius (38% of canvas.width)
-      const baseScale = (360 * 0.32) / maxBoundary;
-      const d = 300; // perspective distance
-
-      if (isPlaying && previousTime !== null) {
-        timeRef.current += Math.min((timestamp - previousTime) / 1000, 0.05) * speed;
-      }
-      previousTime = timestamp;
-
-      // Current camera rotation matrix angles
-      const rotY = rotationRef.current.y; // yaw
-      const rotX = rotationRef.current.x; // pitch
-
-      const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-      const cosX = Math.cos(rotX), sinX = Math.sin(rotX);
-
-      // 3D rotation helper with dynamic scaling
-      const projectPoint = (x, y, z) => {
-        // Rotate Y (horizontal drag)
-        const x1 = x * cosY - z * sinY;
-        const z1 = x * sinY + z * cosY;
-        // Rotate X (vertical drag)
-        const y2 = y * cosX - z1 * sinX;
-        const z2 = y * sinX + z1 * cosX;
-        
-        // Perspective projection applying our adaptive scaling factor
-        const scale = d / (d + z2 * baseScale);
-        return {
-          x: cx + x1 * baseScale * scale,
-          y: cy + y2 * baseScale * scale,
-          z: z2 * baseScale, // depth for Painter's algorithm
-          scale: baseScale * scale
-        };
-      };
-
-      const drawList = [];
-
-      // 1. Generate 3D Nucleus Particles
-      nucleusParticles.forEach(part => {
-        const proj = projectPoint(part.x, part.y, part.z);
-        drawList.push({
-          type: "nucleus",
-          z: proj.z,
-          x: proj.x,
-          y: proj.y,
-          r: 6 * proj.scale,
-          isProton: part.isProton
-        });
-      });
-
-      // 2. Generate 3D Orbit segments & Electrons
-      const shellColors = ["#00d2d3", "#54a0ff", "#a855f7", "#ff7675", "#feca57", "#1dd1a1", "#9b59b6"];
-      
-      shells.forEach((count, i) => {
-        const radius = 45 + i * 20;
-        const color = shellColors[i % shellColors.length];
-        
-        // Custom orbit tilts (inclination and azimuth) to look organic and volumetric
-        const incl = (35 + i * 22) * (Math.PI / 180);
-        const azim = (i * 45) * (Math.PI / 180);
-        const cosI = Math.cos(incl), sinI = Math.sin(incl);
-        const cosA = Math.cos(azim), sinA = Math.sin(azim);
-
-        // Helper to rotate the circular path to its tilted orientation
-        const getTiltedPoint = (angle) => {
-          // Circular point in flat plane
-          const ox = radius * Math.cos(angle);
-          const oy = radius * Math.sin(angle);
-          const oz = 0;
-
-          // Rotate X (inclination)
-          const y1 = oy * cosI;
-          const z1 = -oy * sinI;
-
-          // Rotate Y (azimuth)
-          const x2 = ox * cosA + z1 * sinA;
-          const z2 = -ox * sinA + z1 * cosA;
-
-          return { x: x2, y: y1, z: z2 };
-        };
-
-        // Draw 3D Orbit rings using segments
-        const numSegments = 64;
-        for (let j = 0; j < numSegments; j++) {
-          const a1 = (j * 2 * Math.PI) / numSegments;
-          const a2 = ((j + 1) * 2 * Math.PI) / numSegments;
-          
-          const p1 = getTiltedPoint(a1);
-          const p2 = getTiltedPoint(a2);
-
-          const proj1 = projectPoint(p1.x, p1.y, p1.z);
-          const proj2 = projectPoint(p2.x, p2.y, p2.z);
-
-          drawList.push({
-            type: "orbit",
-            z: (proj1.z + proj2.z) / 2,
-            x1: proj1.x,
-            y1: proj1.y,
-            x2: proj2.x,
-            y2: proj2.y,
-            color
-          });
-        }
-
-        // Draw Electrons along this shell
-        const baseSpeed = 1.2;
-        const orbitSpeed = (baseSpeed - (i * 0.1)) * timeRef.current;
-        for (let k = 0; k < count; k++) {
-          const eAngle = orbitSpeed + (k * 2 * Math.PI) / count;
-          const pos = getTiltedPoint(eAngle);
-          const proj = projectPoint(pos.x, pos.y, pos.z);
-          
-          drawList.push({
-            type: "electron",
-            z: proj.z,
-            x: proj.x,
-            y: proj.y,
-            r: 4.5 * proj.scale,
-            color
-          });
-        }
-      });
-
-      // 3. Painter's Algorithm: Sort by depth (Z) descending (back to front)
-      drawList.sort((a, b) => b.z - a.z);
-
-      // 4. Draw all objects sequentially
-      drawList.forEach(item => {
-        if (item.type === "orbit") {
-          ctx.beginPath();
-          ctx.moveTo(item.x1, item.y1);
-          ctx.lineTo(item.x2, item.y2);
-          ctx.strokeStyle = item.color;
-          ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.28;
-          ctx.stroke();
-          ctx.globalAlpha = 1.0;
-        } else if (item.type === "nucleus") {
-          ctx.beginPath();
-          ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
-          
-          // Radial 3D shading gradient
-          const grad = ctx.createRadialGradient(
-            item.x - item.r * 0.3,
-            item.y - item.r * 0.3,
-            item.r * 0.1,
-            item.x,
-            item.y,
-            item.r
-          );
-          if (item.isProton) {
-            grad.addColorStop(0, "#ff7675");
-            grad.addColorStop(1, "#d63031");
-          } else {
-            grad.addColorStop(0, "#74b9ff");
-            grad.addColorStop(1, "#0984e3");
-          }
-          ctx.fillStyle = grad;
-          ctx.fill();
-        } else if (item.type === "electron") {
-          ctx.beginPath();
-          ctx.arc(item.x, item.y, item.r, 0, 2 * Math.PI);
-          
-          // Glowing electron sphere
-          const grad = ctx.createRadialGradient(
-            item.x - item.r * 0.2,
-            item.y - item.r * 0.2,
-            item.r * 0.1,
-            item.x,
-            item.y,
-            item.r
-          );
-          grad.addColorStop(0, "#ffffff");
-          grad.addColorStop(0.3, item.color);
-          grad.addColorStop(1, "rgba(0,0,0,0.85)");
-          
-          ctx.fillStyle = grad;
-          ctx.fill();
-        }
-      });
-
-      if (isPlaying && !document.hidden && isVisible) localFrameId = requestAnimationFrame(render);
-    };
-    const schedule = () => {
-      if (localFrameId === null && !document.hidden && isVisible) localFrameId = requestAnimationFrame(render);
-    };
-    const visibilityChanged = () => {
-      previousTime = null;
-      if (document.hidden) {
-        cancelAnimationFrame(localFrameId);
-        localFrameId = null;
-      } else schedule();
-    };
-    const observer = new IntersectionObserver(([entry]) => {
-      isVisible = entry.isIntersecting;
-      previousTime = null;
-      if (!isVisible) {
-        cancelAnimationFrame(localFrameId);
-        localFrameId = null;
-      } else schedule();
-    });
-    observer.observe(canvas);
-    redrawRef.current = schedule;
-    document.addEventListener('visibilitychange', visibilityChanged);
-    schedule();
-    return () => {
-      cancelAnimationFrame(localFrameId);
-      document.removeEventListener('visibilitychange', visibilityChanged);
-      observer.disconnect();
-      redrawRef.current = () => {};
-    };
-  }, [nucleusParticles, shells, isPlaying, speed]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={360}
-      height={360}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onLostPointerCapture={handlePointerUp}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="img"
-      aria-label={`Schematic atom with ${protons} protons, ${neutrons} neutrons and ${electrons} electrons. Drag or use arrow keys to rotate; Home resets the view.`}
-      style={{ width: 360, height: 'auto', touchAction: 'none' }}
-      className="cursor-grab active:cursor-grabbing max-w-full select-none rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
-    />
-  );
-}
+import { balanceEquation, calculateMolarMass, getSolubility, cationsList, anionsList, ionLabels } from "../lib/chemistry.mjs";
 
 // --- MAIN WORKSPACE COMPONENT ---
 
 export default function ChemistryWorkspace() {
   const [activeSubTab, setActiveSubTab] = useState("balancer");
+  const [atomVisited, setAtomVisited] = useState(false);
 
   // Balancer State
   const [equationInput, setEquationInput] = useState("C3H8 + O2 = CO2 + H2O");
@@ -337,14 +26,6 @@ export default function ChemistryWorkspace() {
   // Solubility State
   const [selectedSolubility, setSelectedSolubility] = useState(null);
 
-  // 3D Atom Showcase State
-  const [atomNumber, setAtomNumber] = useState(6); // Default Carbon
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
-  const [customProtons, setCustomProtons] = useState(6);
-  const [customNeutrons, setCustomNeutrons] = useState(6);
-  const [customElectrons, setCustomElectrons] = useState(6);
-
   const handleBalance = (event) => {
     event.preventDefault();
     setBalanceResult(balanceEquation(equationInput));
@@ -353,22 +34,12 @@ export default function ChemistryWorkspace() {
     event.preventDefault();
     setMassResult(calculateMolarMass(formulaInput));
   };
-  const selectAtom = (number) => {
-    const element = elementsData.find(element => element.number === Number(number));
-    if (!element) return;
-    setAtomNumber(element.number);
-    setCustomProtons(element.number);
-    setCustomNeutrons(element.massNumber ? element.massNumber - element.number : element.neutrons);
-    setCustomElectrons(element.number);
-  };
-  const shells = getElectronShells(customProtons, customElectrons);
-  const currentElement = elementsData.find(element => element.number === customProtons);
 
   return (
     <div className="w-full min-w-0 flex flex-col gap-6">
       
       {/* Sub-Navigation tabs */}
-      <div className="glass-panel p-2 rounded-2xl flex gap-1.5 overflow-x-auto no-print">
+      <div className="suite-tool-tabs no-print" aria-label="Chemistry tools">
         {[
           { id: "balancer", label: "Equation Balancer", icon: RefreshCw },
           { id: "molar", label: "Molar Mass Calculator", icon: Calculator },
@@ -380,15 +51,12 @@ export default function ChemistryWorkspace() {
             <button
               key={tab.id}
               aria-pressed={activeSubTab === tab.id}
-              onClick={() => setActiveSubTab(tab.id)}
-              className={`flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
-                activeSubTab === tab.id
-                  ? "bg-black/10 dark:bg-white/10 text-slate-900 dark:text-white shadow-inner border border-black/10 dark:border-white/15"
-                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 border border-transparent"
-              }`}
+              onClick={() => { setActiveSubTab(tab.id); if (tab.id === "atom") setAtomVisited(true); }}
+              type="button"
+              className="suite-tool-tab"
             >
-              <Icon className="w-4 h-4" />
-              {tab.label}
+              <Icon className="w-4 h-4" aria-hidden="true" />
+              <span>{tab.label}</span>
             </button>
           );
         })}
@@ -735,187 +403,7 @@ export default function ChemistryWorkspace() {
         )}
 
         {/* TAB 4: VIRTUAL 3D ATOM SHOWCASE */}
-        {activeSubTab === "atom" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
-            
-            {/* Visual Representation (Left Column: 7/12 cols) */}
-            <div className="lg:col-span-7 flex flex-col items-center">
-              
-              {/* 360° Interactive 3D Atom Showcase Canvas */}
-              <div className="relative w-full flex items-center justify-center select-none">
-                <InteractiveAtom3D
-                  protons={customProtons}
-                  neutrons={customNeutrons}
-                  electrons={customElectrons}
-                  isPlaying={isPlaying}
-                  speed={speed}
-                />
-              </div>
-
-              <p className="max-w-sm text-center text-xs text-slate-600 dark:text-zinc-400 mt-3">Drag to rotate, or focus the model and use arrow keys. Animation starts paused.</p>
-              {/* Sub-Showcase Animation Controls */}
-              <div className="flex gap-4 mt-6 items-center">
-                <button
-                  aria-label={isPlaying ? "Pause atom animation" : "Play atom animation"}
-                  aria-pressed={isPlaying}
-                  onClick={() => setIsPlaying(!isPlaying)}
-                  className="glass-btn w-10 h-10 rounded-full flex items-center justify-center text-slate-900 dark:text-white"
-                >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
-                </button>
-
-                <div className="flex items-center gap-2 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 px-3 py-1.5 rounded-xl">
-                  <span className="text-[10px] text-zinc-500 font-bold uppercase">Speed</span>
-                  <input
-                    type="range"
-                    aria-label="Atom animation speed"
-                    min="0.5"
-                    max="2.5"
-                    step="0.5"
-                    value={speed}
-                    onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                    className="w-20 accent-indigo-500 cursor-pointer h-1 rounded"
-                  />
-                  <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-300 w-8">{speed}x</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Parameter adjustments (Right Column: 5/12 cols) */}
-            <div className="lg:col-span-5 flex flex-col gap-5">
-              <div className="text-left">
-                <span className="text-[10px] uppercase font-extrabold text-indigo-600 dark:text-indigo-400 tracking-wider">Virtual Lab Showcase</span>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-1">Interactive Atom Simulator</h2>
-                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
-                  Explore particle counts and charge. This is a schematic shell model, not electron trajectories. Ion configurations are approximate; nuclear stability requires isotope data.
-                </p>
-              </div>
-
-              {/* Element Selector Dropdown */}
-              <div className="glass-panel-light p-3 rounded-xl flex flex-col gap-1 text-left">
-                <span className="text-[10px] text-slate-700 dark:text-zinc-400 font-bold uppercase tracking-wider">Select Predefined Atom</span>
-                <select
-                  value={atomNumber}
-                  aria-label="Select predefined atom"
-                  onChange={(e) => selectAtom(e.target.value)}
-                  className="glass-input bg-white/85 dark:bg-zinc-950/80 border border-black/10 dark:border-white/10 text-slate-900 dark:text-white rounded-lg p-2 mt-1 text-sm font-semibold cursor-pointer w-full focus:outline-none"
-                >
-                  {elementsData.map(e => (
-                    <option key={e.number} value={e.number} className="bg-white dark:bg-zinc-950 text-slate-900 dark:text-white">
-                      Z = {e.number}: {e.name} ({e.symbol})
-                    </option>
-                  ))}
-                </select>
-                <button type="button" onClick={() => selectAtom(atomNumber)} className="glass-btn min-h-10 rounded-lg px-3 text-sm mt-2">Reset atom to selected preset</button>
-              </div>
-
-              {/* Manual Increment/Decrement Controls */}
-              <div className="flex flex-col gap-3">
-                {/* Protons */}
-                <div className="glass-panel-light p-3 rounded-xl flex items-center justify-between">
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-rose-700 dark:text-rose-300">Protons (p+)</span>
-                    <span className="text-[10px] text-slate-600 dark:text-zinc-400">Defines element identity</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      aria-label="Decrease protons"
-                      onClick={() => setCustomProtons(Math.max(1, customProtons - 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="w-8 text-center text-lg font-black text-slate-900 dark:text-white font-mono">{customProtons}</span>
-                    <button
-                      aria-label="Increase protons"
-                      onClick={() => setCustomProtons(Math.min(118, customProtons + 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Neutrons */}
-                <div className="glass-panel-light p-3 rounded-xl flex items-center justify-between">
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-blue-700 dark:text-blue-300">Neutrons (n0)</span>
-                    <span className="text-[10px] text-slate-600 dark:text-zinc-400">Alters isotopic mass</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      aria-label="Decrease neutrons"
-                      onClick={() => setCustomNeutrons(Math.max(0, customNeutrons - 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="w-8 text-center text-lg font-black text-slate-900 dark:text-white font-mono">{customNeutrons}</span>
-                    <button
-                      aria-label="Increase neutrons"
-                      onClick={() => setCustomNeutrons(Math.min(176, customNeutrons + 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Electrons */}
-                <div className="glass-panel-light p-3 rounded-xl flex items-center justify-between">
-                  <div className="flex flex-col text-left">
-                    <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">Electrons (e-)</span>
-                    <span className="text-[10px] text-slate-600 dark:text-zinc-400">Determines net charge/ionization</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      aria-label="Decrease electrons"
-                      onClick={() => setCustomElectrons(Math.max(0, customElectrons - 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                    <span className="w-8 text-center text-lg font-black text-slate-900 dark:text-white font-mono">{customElectrons}</span>
-                    <button
-                      aria-label="Increase electrons"
-                      onClick={() => setCustomElectrons(Math.min(118, customElectrons + 1))}
-                      className="glass-btn w-10 h-10 rounded-lg flex items-center justify-center text-slate-900 dark:text-white"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dynamic Charge & Stability Analysis */}
-              <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-2 text-xs text-left">
-                <span className="text-[10px] text-slate-700 dark:text-zinc-400 font-bold uppercase tracking-wider block">Real-time Analysis</span>
-                <div className="flex justify-between border-b border-black/5 dark:border-white/5 py-1">
-                  <span className="text-slate-600 dark:text-zinc-400">Net Ionic Charge:</span>
-                  <span className={`font-mono font-bold ${
-                    customProtons - customElectrons > 0 ? "text-amber-600 dark:text-amber-400" :
-                    customProtons - customElectrons < 0 ? "text-cyan-600 dark:text-cyan-400" :
-                    "text-slate-900 dark:text-white"
-                  }`}>
-                    {customProtons - customElectrons > 0 ? `+${customProtons - customElectrons} (Cation)` :
-                     customProtons - customElectrons < 0 ? `${customProtons - customElectrons} (Anion)` :
-                     "0 (Neutral)"}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-3 py-1">
-                  <span className="text-slate-600 dark:text-zinc-400">Modelled isotope:</span>
-                  <span className="font-bold">{currentElement.name}-{customProtons + customNeutrons}</span>
-                </div>
-                <div className="flex justify-between gap-3 py-1">
-                  <span className="text-slate-600 dark:text-zinc-400">Electrons by shell:</span>
-                  <span className="font-mono font-bold">{shells.length ? shells.join(", ") : "None"}</span>
-                </div>
-                <p className="text-slate-600 dark:text-zinc-400">Stability is not inferred from particle counts. Some combinations shown may not exist as bound atoms or isotopes.</p>
-              </div>
-            </div>
-
-          </div>
-        )}
+        <div hidden={activeSubTab !== "atom"}>{atomVisited && <AtomShowcase />}</div>
 
       </div>
     </div>

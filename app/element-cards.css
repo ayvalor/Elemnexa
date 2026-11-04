@@ -1,0 +1,83 @@
+/* Category colour is a consistent visual key for the legend and both card layouts. */
+.periodic-explorer [data-category="alkali"] { --card-category-color: var(--group-alkali); }
+.periodic-explorer [data-category="alkaline"] { --card-category-color: var(--group-alkaline); }
+.periodic-explorer [data-category="transition"] { --card-category-color: var(--group-transition); }
+.periodic-explorer [data-category="post-transition"] { --card-category-color: var(--group-post-transition); }
+.periodic-explorer [data-category="metalloid"] { --card-category-color: var(--group-metalloid); }
+.periodic-explorer [data-category="reactive-nonmetal"] { --card-category-color: var(--group-reactive-nonmetal); }
+.periodic-explorer [data-category="halogen"] { --card-category-color: var(--group-halogen); }
+.periodic-explorer [data-category="noble"] { --card-category-color: var(--group-noble); }
+.periodic-explorer [data-category="lanthanide"] { --card-category-color: var(--group-lanthanide); }
+.periodic-explorer [data-category="actinide"] { --card-category-color: var(--group-actinide); }
+.periodic-explorer [data-category="unknown"] { --card-category-color: var(--group-unknown); }
+.periodic-explorer .element-family-filter { display: inline-flex; align-items: center; gap: .45rem; }
+.periodic-explorer .family-color-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--card-category-color); flex: none; }
+.periodic-explorer .periodic-layout { min-width: 1160px; padding: 12px; gap: 5px; border-radius: 20px; background: #fff7; border: 1px solid #94a3b828; }
+.dark .periodic-explorer .periodic-layout { background: #0f172a70; border-color: #94a3b821; }
+.periodic-explorer .periodic-group-number { display: block; text-align: center; padding: .2rem 0 .4rem; font-size: .65rem; font-weight: 600; color: #64748b; font-variant-numeric: tabular-nums; }
+.dark .periodic-explorer .periodic-group-number { color: #94a3b8; }
+.periodic-explorer .element-card.element-tile {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 0; height: 101px; padding: 7px 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--card-category-color) 18%, #e2e8f0);
+  border-top: 2px solid color-mix(in srgb, var(--card-category-color) 80%, transparent);
+  border-radius: 10px;
+  background: linear-gradient(155deg, color-mix(in srgb, var(--card-category-color) 10%, white), #fff 78%);
+  color: #0f172a;
+  box-shadow: 0 2px 3px #0f172a04;
+  overflow: visible; cursor: pointer; text-align: center;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .18s ease;
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+.periodic-explorer .element-tile-meta { display: flex; justify-content: space-between; width: 100%; align-items: center; gap: 2px; font-size: 8.5px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.periodic-explorer .element-card .element-number { font-weight: 750; color: var(--card-category-color); }
+.periodic-explorer .element-card .element-mass { color: #5e6a7d; font-weight: 500; white-space: nowrap; }
+.periodic-explorer .element-card .element-symbol { font-family: var(--font-display, "Geist Variable", var(--font-sans)); font-size: 28px; line-height: 1; letter-spacing: -.04em; font-weight: 750; color: #152238; padding-top: 4px; }
+.periodic-explorer .element-card .element-name { display: grid; align-items: center; min-height: 22px; max-width: 100%; font-size: 9px; line-height: 1.2; letter-spacing: -.01em; font-weight: 550; overflow-wrap: anywhere; color: #475569; }
+.dark .periodic-explorer .element-card.element-tile {
+  background: linear-gradient(155deg, color-mix(in srgb, var(--card-category-color) 12%, #111b2d), #111b2d 78%);
+  border-color: color-mix(in srgb, var(--card-category-color) 20%, #1e293b);
+  border-top-color: color-mix(in srgb, var(--card-category-color) 75%, transparent);
+  box-shadow: 0 2px 4px #00000012;
+}
+.dark .periodic-explorer .element-card .element-symbol { color: #f1f5f9; }
+.dark .periodic-explorer .element-card .element-name { color: #cbd5e1; }
+.dark .periodic-explorer .element-card .element-mass { color: #a5b4c9; }
+.periodic-explorer .element-card.element-tile:disabled { opacity: .2; cursor: default; box-shadow: none; }
+.periodic-explorer .element-card.element-tile:focus-visible, .periodic-explorer .element-preview:focus-visible { outline: 3px solid var(--card-category-color); outline-offset: 3px; z-index: 2; }
+.periodic-explorer .element-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.periodic-explorer .element-preview {
+  display: flex; flex-direction: column; position: relative; min-width: 0; padding: 14px; border-radius: 18px; text-align: left;
+  border: 1px solid color-mix(in srgb, var(--card-category-color) 23%, #e2e8f0);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 9%, white), #fff 75%);
+  box-shadow: 0 3px 10px #0f172a05;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.periodic-explorer .element-preview-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.periodic-explorer .element-preview-number { display: grid; place-items: center; min-width: 26px; min-height: 24px; padding-inline: 4px; border-radius: 7px; background: color-mix(in srgb, var(--card-category-color) 9%, transparent); font-size: .68rem; font-weight: 700; color: var(--card-category-color); }
+.periodic-explorer .element-preview-phase { font-size: .61rem; font-weight: 550; color: #64748b; }
+.periodic-explorer .element-preview-identity { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-block: 15px 9px; }
+.periodic-explorer .element-preview-identity svg { color: var(--card-category-color); opacity: .55; }
+.periodic-explorer .element-preview-symbol { font-family: var(--font-display, "Geist Variable", var(--font-sans)); font-size: clamp(2rem, 7vw, 2.65rem); line-height: 1; font-weight: 750; letter-spacing: -.05em; color: var(--card-category-color); }
+.periodic-explorer .element-preview-name { font-size: .86rem; line-height: 1.3; font-weight: 650; letter-spacing: -.025em; overflow-wrap: anywhere; color: #152238; }
+.periodic-explorer .element-preview-family { margin-top: 4px; font-size: .61rem; line-height: 1.45; min-height: 1.45em; color: #64748b; }
+.periodic-explorer .element-preview-bottom { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--card-category-color) 14%, transparent); font-size: .61rem; color: #64748b; font-variant-numeric: tabular-nums; }
+.dark .periodic-explorer .element-preview { background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 11%, #111b2d), #111b2d 75%); border-color: color-mix(in srgb, var(--card-category-color) 22%, #1e293b); }
+.dark .periodic-explorer .element-preview-name { color: #f1f5f9; }
+.dark .periodic-explorer .element-preview-phase, .dark .periodic-explorer .element-preview-family, .dark .periodic-explorer .element-preview-bottom { color: #a5b4c9; }
+@media (max-width: 767px) { .periodic-explorer .element-preview-grid { display: grid; } }
+@media (min-width: 640px) { .periodic-explorer .element-preview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .periodic-explorer .element-card.element-tile:enabled:hover, .periodic-explorer .element-preview:hover { transform: translateY(-3px); border-color: var(--card-category-color); box-shadow: 0 7px 18px color-mix(in srgb, var(--card-category-color) 14%, transparent); z-index: 2; }
+}
+@media (max-width: 359px) {
+  .periodic-explorer .element-preview-grid { gap: 8px; }
+  .periodic-explorer .element-preview { padding: 11px; border-radius: 15px; }
+  .periodic-explorer .element-preview-name { font-size: .78rem; }
+  .periodic-explorer .element-preview-family { min-height: 2.9em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .periodic-explorer .element-card.element-tile, .periodic-explorer .element-preview { transition: none; }
+}
+@media print {
+  .periodic-explorer .element-card.element-tile, .periodic-explorer .element-preview { box-shadow: none; background: #fff; break-inside: avoid; }
+}

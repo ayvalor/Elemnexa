@@ -31,7 +31,7 @@ async function expectNoPageOverflow(page) {
   expect(widths.document, JSON.stringify(widths)).toBeLessThanOrEqual(widths.viewport + 1);
 }
 
-const elementButtons = page => page.locator('button[aria-haspopup="dialog"]:visible:not([disabled])');
+const elementButtons = page => page.locator('#panel-table button[aria-haspopup="dialog"]:visible:not([disabled])');
 
 test('all elements render; searching, filters, and empty state work', async ({ page }) => {
   await openApp(page);
@@ -214,6 +214,8 @@ test('serves security headers and loads self-hosted fonts without remote request
   expect(response.headers()['x-frame-options']).toBe('DENY');
   expect(response.headers()['content-security-policy']).toContain("object-src 'none'");
   expect(response.headers()['x-powered-by']).toBeUndefined();
-  expect(await page.evaluate(() => document.fonts.check('16px "Geist Variable"'))).toBe(true);
+  expect(await page.locator('body').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Inter Variable');
+  expect(await page.locator('h1').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Manrope Variable');
+  expect(await page.evaluate(() => document.fonts.check('16px "Inter Variable"') && document.fonts.check('32px "Manrope Variable"'))).toBe(true);
   expect(externalRequests).toEqual([]);
 });

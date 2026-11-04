@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { elementsData, categoryNames } from "../data/elements";
 import ElementCard from "./ElementCard";
-import { Search, RotateCcw, ArrowRight, SlidersHorizontal } from "lucide-react";
+import { Search, RotateCcw, ArrowRight, ArrowUpRight, SlidersHorizontal } from "lucide-react";
+import "../app/element-cards.css";
 
 const categories = Object.entries(categoryNames);
 const phases = ["Solid", "Liquid", "Gas", "Unknown"];
@@ -32,7 +33,7 @@ export default function PeriodicTable({ onElementClick }) {
   const reset = () => { setSearch(""); setCategory(""); setBlock(""); setPhase(""); setSyntheticOnly(false); };
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-5">
+    <div className="periodic-explorer flex w-full min-w-0 flex-col gap-5">
       <div className="glass-panel flex w-full flex-col gap-4 rounded-2xl p-4 sm:p-5 no-print">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="relative w-full sm:max-w-lg">
@@ -55,7 +56,7 @@ export default function PeriodicTable({ onElementClick }) {
               <legend className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Element family</legend>
               <div className="flex flex-wrap gap-1.5">
                 {categories.map(([id, label]) => (
-                  <button type="button" key={id} aria-pressed={category === id} onClick={() => setCategory(category === id ? "" : id)} className={`${filterClass} ${category === id ? selectedClass : idleClass}`}>{label}</button>
+                  <button type="button" key={id} data-category={id} aria-pressed={category === id} onClick={() => setCategory(category === id ? "" : id)} className={`element-family-filter ${filterClass} ${category === id ? selectedClass : idleClass}`}><span className="family-color-dot" aria-hidden="true" />{label}</button>
                 ))}
               </div>
             </fieldset>
@@ -92,22 +93,24 @@ export default function PeriodicTable({ onElementClick }) {
       <div className="hidden min-w-0 md:block">
         <p className="mb-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"><ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />Scroll horizontally on smaller screens. Select an element to explore its properties.</p>
         <div className="periodic-table-scroll-wrapper rounded-2xl" tabIndex={0} role="region" aria-label="Periodic table; scroll horizontally to see all groups">
-          <div className="periodic-table-grid glass-panel rounded-2xl p-3 sm:p-4" style={{ minWidth: "1040px" }}>
+          <div className="periodic-table-grid periodic-layout">
+            {Array.from({ length: 18 }, (_, index) => <span key={`group-${index + 1}`} className="periodic-group-number" style={{ gridRowStart: 1, gridColumnStart: index + 1 }} title={`Group ${index + 1}`}>{index + 1}</span>)}
             {elementsData.map(element => <ElementCard key={element.number} element={element} onClick={onElementClick} matched={matches.has(element.number)} />)}
-            <div aria-hidden="true" style={{ gridRowStart: 8, gridColumn: "1 / 19" }} className="h-3" />
-            <span className="fblock-label" style={{ gridRowStart: 9, gridColumn: "1 / 4" }}>Lanthanides</span>
-            <span className="fblock-label" style={{ gridRowStart: 10, gridColumn: "1 / 4" }}>Actinides</span>
+            <div aria-hidden="true" style={{ gridRowStart: 9, gridColumn: "1 / 19" }} className="h-3" />
+            <span className="fblock-label" style={{ gridRowStart: 10, gridColumn: "1 / 4" }}>Lanthanides</span>
+            <span className="fblock-label" style={{ gridRowStart: 11, gridColumn: "1 / 4" }}>Actinides</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:hidden" aria-label="Element cards">
+      <div className="element-preview-grid md:hidden" aria-label="Element cards">
         {filteredElements.map(element => (
-          <button type="button" key={element.number} onClick={() => onElementClick(element)} aria-label={`${element.name}, ${element.symbol}, atomic number ${element.number}`} aria-haspopup="dialog" className="glass-panel flex min-w-0 flex-col gap-2 rounded-2xl border border-slate-200 p-3 text-left transition-colors hover:border-indigo-400 dark:border-white/10 dark:hover:border-indigo-400">
-            <span className="flex w-full items-center justify-between text-xs text-slate-500 dark:text-slate-400"><span>{element.number}</span><span>{element.phase}</span></span>
-            <span className="text-3xl font-extrabold tracking-tight text-indigo-700 dark:text-indigo-300">{element.symbol}</span>
-            <span className="w-full truncate text-sm font-bold text-slate-900 dark:text-white">{element.name}</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">{element.massType === "representative isotope mass number" ? `[${element.massNumber}]` : `${element.mass.toFixed(3)} u`}</span>
+          <button type="button" key={element.number} data-category={element.category} data-element-number={element.number} onClick={() => onElementClick(element)} aria-label={`${element.name}, ${element.symbol}, atomic number ${element.number}`} aria-haspopup="dialog" className="element-preview">
+            <span className="element-preview-top"><span className="element-preview-number" title="Atomic number">{element.number}</span><span className="element-preview-phase">{element.phase}</span></span>
+            <span className="element-preview-identity"><span className="element-preview-symbol">{element.symbol}</span><ArrowUpRight size={18} aria-hidden="true" /></span>
+            <span className="element-preview-name">{element.name}</span>
+            <span className="element-preview-family">{categoryNames[element.category]}</span>
+            <span className="element-preview-bottom"><span>{element.massType === "representative isotope mass number" ? `[${element.massNumber}]` : `${element.mass.toFixed(3)} u`}</span><span>{element.block}-block</span></span>
           </button>
         ))}
       </div>

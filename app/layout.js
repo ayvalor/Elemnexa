@@ -1,4 +1,5 @@
-import "@fontsource-variable/geist";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
 import "@fontsource-variable/geist-mono";
 import "./globals.css";
 

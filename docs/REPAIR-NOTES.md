@@ -22,7 +22,7 @@ This review addresses the application source at `f6807f16d825307b47577e69760c365
 - Replaced click-only element divs with native buttons. Added input labels, result announcements, keyboard tab navigation, empty states, and visible keyboard focus.
 - Added modal semantics, focus containment/restoration, Escape dismissal, background inertness, body scroll locking, and working drawer exit transitions.
 - Removed continuous background movement, per-pointer React state updates, and per-tile blur. Animations respect reduced-motion preferences; atom rendering pauses when hidden/offscreen and starts paused.
-- Bundled Geist/Geist Mono through Fontsource, eliminating third-party font requests and the blocked build dependency.
+- Bundled variable fonts through Fontsource, eliminating third-party font requests and the blocked build dependency.
 - Corrected print rules so student details and the worksheet heading remain visible, dark mode prints legibly, questions avoid page splits, and inactive workspaces stay hidden.
 
 ## Security and dependency review
@@ -33,8 +33,18 @@ The initial npm audit reported 25 findings, including 1 critical and 8 high. Aft
 
 ## Validation
 
-Final local results: clean `npm ci`, zero lint errors/warnings, **20/20 unit cases**, **40/40 production-browser cases**, successful production build/startup, and **0 production dependency advisories**. All tests ran; none were skipped. Reference-backed physical-property coverage increased from 43 to 85 elements, while shell/configuration coverage is all 118.
+Final local results: clean `npm ci`, zero lint errors/warnings, **22/22 unit cases**, **70/70 production-browser cases**, successful production build/startup, and **0 production dependency advisories**. All tests ran; none were skipped. Reference-backed physical-property coverage increased from 43 to 85 elements, while shell/configuration coverage is all 118.
 
-Run the documented commands in README.md. Unit regressions independently check formula parsing, exact balances, atom conservation across the entire reaction bank, molar masses, electron shells, isotope data, and worksheet filtering/formatting. Browser regressions cover four viewport sizes, both themes, local-storage failures, keyboard/modal interactions, calculations, filters, worksheet generation and print styling, response headers, and font requests. The production build is also exercised locally.
+Run the documented commands in README.md. Unit regressions independently check formula parsing, exact balances, atom conservation across the entire reaction bank, molar masses, electron shells, isotope data, and worksheet filtering/formatting. Browser regressions cover five viewport sizes, both themes, local-storage failures, keyboard/modal interactions, calculations, filters, worksheet generation and print styling, response headers, and font requests. The production build is also exercised locally.
 
 The GitHub Actions workflow repeats lint, unit tests, a production dependency audit, production build, and Chromium browser tests. Its remote outcome must be checked after push; a local pass does not establish that the hosted workflow ran successfully. Testing here uses Chromium emulation, not physical iOS/Android hardware or every browser engine.
+
+
+## Design follow-up from browser comments
+
+- Replaced body/caption/footer typography with self-hosted Inter and display typography with Manrope; retained Geist Mono for numerical data.
+- Added a responsive discovery hero with interactive featured elements, clearer hierarchy, and a direct path to the table. Restyled the footer with readable text and separated identity/navigation areas.
+- Replaced the scrolling chemistry toolbar with a wrapping two/four-column layout and fine borders around every tool.
+- Restyled element cards with consistent category colours, group headings, readable names, and richer mobile summaries.
+- Rebuilt the atom stage with high-DPI rendering, depth cues, a particle legend, principal-shell populations, 3D/flat modes, zoom/reset, and accurate playback controls. The model preserves particle counts and tool-switch state. It illustrates shells and nuclear composition, not literal quantum trajectories or nuclear stability.
+- Added targeted browser checks for exact label/card geometry, featured-element interactions, canvas rendering, keyboard rotation, camera reset, heavy-element counts, and play/pause behaviour, including the user's 776×751 viewport.

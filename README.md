@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open the local address shown by Next.js. Geist and Geist Mono are bundled locally: builds and visitors do not need Google Fonts access. The first dependency installation requires npm registry access.
+Open the local address shown by Next.js. Inter, Manrope, and Geist Mono are bundled locally: builds and visitors do not need Google Fonts access. The first dependency installation requires npm registry access.
 
 ```sh
 npm run lint
@@ -35,7 +35,7 @@ Playwright starts a development server by default. To test a production build, s
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
 ```
 
-A managed environment with an existing Chromium installation can set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium`. Tests cover desktop (1440px), tablet (768px), mobile (390px), and small mobile (320px), including keyboard controls, saved themes, calculations, print layouts, and page overflow. Browser emulation supplements real-device testing; it does not establish compatibility with every browser or device.
+A managed environment with an existing Chromium installation can set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium`. Tests cover desktop (1440px), tablet (768px), the reviewed 776×751 layout, mobile (390px), and small mobile (320px), including keyboard controls, saved themes, calculations, print layouts, and page overflow. Browser emulation supplements real-device testing; it does not establish compatibility with every browser or device.
 
 ## Scientific scope and references
 
