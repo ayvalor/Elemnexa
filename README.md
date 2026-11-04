@@ -45,8 +45,11 @@ A managed environment with an existing Chromium installation can set `PLAYWRIGHT
 - Solubility is qualitative. Temperature, concentration, pH, redox reactions, and hydrolysis can change outcomes; the matrix labels key reactions and exceptions.
 - Missing properties are explicitly marked rather than fabricated. Predicted superheavy-element configurations are labelled. Each element's drawer exposes reference links and data notes.
 - Electronic configurations and shell populations use the per-element references in [Periodic-Table-JSON](https://github.com/Bowserinator/Periodic-Table-JSON/tree/a78c7a48fe7235cebd6153161a9e7fa70f0cfb30). Standard-weight conventions follow [CIAAW](https://ciaaw.org/atomic-weights.htm). Follow the individual element sources for measurement conditions and provenance.
+- Previously missing details use pinned, cross-checked reference compilations. See the [physical-property and ionic-chemistry source record](docs/element-reference-sources.md) and [discovery/name-origin source record](docs/element-history-sources.md). Measured values, theoretical estimates, unavailable evaluated data, and naming origins are distinguished in the drawer.
 
 The worksheet bank is finite. Filters can produce fewer unique questions than requested; the UI reports the available count and never silently duplicates questions to fill a sheet. Answer-key state is visible in both the app and printed output.
+
+The footer links to [@ayvalor on Instagram](https://www.instagram.com/ayvalor/) and opens Instagram messages for feedback. The app does not collect or send feedback itself; Instagram sign-in may be required.
 
 ## Maintenance and security
 

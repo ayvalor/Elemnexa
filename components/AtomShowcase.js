@@ -7,6 +7,8 @@ import { getElectronShells } from '../lib/chemistry.mjs';
 import { nucleusPoints, shellPalette } from '../lib/atom-model.mjs';
 import './atom-showcase.css';
 
+const lightShellPalette = ['#0f766e', '#2563eb', '#7c3aed', '#be123c', '#a16207', '#15803d', '#a21caf'];
+
 function AtomCanvas({ protons, neutrons, electrons, playing, speed, zoom, view, resetVersion }) {
   const canvasRef = useRef(null);
   const rotation = useRef({ x: .35, y: -.3 });
@@ -27,6 +29,8 @@ function AtomCanvas({ protons, neutrons, electrons, playing, speed, zoom, view, 
       if (playing && lastTime !== null) clock.current += Math.min((timestamp - lastTime) / 1000, .05) * speed;
       lastTime = timestamp;
       context.clearRect(0, 0, size, size);
+      const dark = document.documentElement.classList.contains('dark');
+      const colors = dark ? shellPalette : lightShellPalette;
       const cx = size / 2, cy = size / 2;
       const xAngle = view === 'flat' ? 0 : rotation.current.x;
       const yAngle = view === 'flat' ? 0 : rotation.current.y;
@@ -43,7 +47,7 @@ function AtomCanvas({ protons, neutrons, electrons, playing, speed, zoom, view, 
       const nucleusRadius = Math.max(3, Math.min(9, 26 / Math.cbrt(nucleus.length)));
       for (const particle of nucleus) {
         const point = rotate(particle.x, particle.y, particle.z);
-        objects.push({ ...point, kind: 'particle', radius: nucleusRadius * point.scale, color: particle.isProton ? '#fb7185' : '#60a5fa' });
+        objects.push({ ...point, kind: 'particle', radius: nucleusRadius * point.scale, color: particle.isProton ? (dark ? '#fb7185' : '#e11d48') : (dark ? '#60a5fa' : '#2563eb') });
       }
       shells.forEach((count, shell) => {
         const radius = radiusFor(shell);
@@ -56,25 +60,25 @@ function AtomCanvas({ protons, neutrons, electrons, playing, speed, zoom, view, 
         };
         for (let segment = 0; segment < 100; segment++) {
           const p1 = pointAt(segment * Math.PI * 2 / 100), p2 = pointAt((segment + 1) * Math.PI * 2 / 100);
-          objects.push({ kind: 'ring', a: p1, b: p2, z: (p1.z + p2.z) / 2, color: shellPalette[shell] });
+          objects.push({ kind: 'ring', a: p1, b: p2, z: (p1.z + p2.z) / 2, color: colors[shell] });
         }
         for (let index = 0; index < count; index++) {
           const point = pointAt(index * 2 * Math.PI / count + clock.current * (.38 - shell * .025) + shell * .32);
-          objects.push({ ...point, kind: 'electron', radius: Math.max(2.5, 4.1 - count / 40) * point.scale, color: '#67e8f9' });
+          objects.push({ ...point, kind: 'electron', radius: Math.max(2.5, 4.1 - count / 40) * point.scale, color: dark ? '#67e8f9' : '#0891b2' });
         }
       });
       objects.sort((a, b) => b.z - a.z);
       for (const item of objects) {
         if (item.kind === 'ring') {
           context.beginPath(); context.moveTo(item.a.x, item.a.y); context.lineTo(item.b.x, item.b.y);
-          context.strokeStyle = item.color; context.globalAlpha = item.z > 0 ? .22 : .65;
+          context.strokeStyle = item.color; context.globalAlpha = item.z > 0 ? (dark ? .22 : .3) : (dark ? .65 : .7);
           context.lineWidth = item.z > 0 ? .8 : 1.2; context.stroke(); context.globalAlpha = 1;
         } else {
           const gradient = context.createRadialGradient(item.x - item.radius * .3, item.y - item.radius * .35, 0, item.x, item.y, item.radius);
           gradient.addColorStop(0, '#fff'); gradient.addColorStop(.23, item.color); gradient.addColorStop(1, item.kind === 'electron' ? '#0e7490' : '#203153');
           context.beginPath(); context.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
           context.fillStyle = gradient; context.fill();
-          if (item.kind === 'electron') { context.strokeStyle = '#a5f3fc88'; context.lineWidth = .6; context.stroke(); }
+          if (item.kind === 'electron') { context.strokeStyle = dark ? '#a5f3fc88' : '#155e7580'; context.lineWidth = .6; context.stroke(); }
         }
       }
       if (playing && visible && !document.hidden) frame = requestAnimationFrame(draw);
@@ -92,10 +96,13 @@ function AtomCanvas({ protons, neutrons, electrons, playing, speed, zoom, view, 
     });
     const visibility = () => { lastTime = null; if (document.hidden) { cancelAnimationFrame(frame); frame = null; } else schedule(); };
     const observer = new ResizeObserver(resize);
+    // A paused model still needs a new frame when the user switches the site theme.
+    const themeObserver = new MutationObserver(schedule);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     observer.observe(canvas); intersection.observe(canvas);
     document.addEventListener('visibilitychange', visibility);
     redraw.current = schedule; resize();
-    return () => { cancelAnimationFrame(frame); observer.disconnect(); intersection.disconnect(); document.removeEventListener('visibilitychange', visibility); redraw.current = () => {}; };
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); intersection.disconnect(); themeObserver.disconnect(); document.removeEventListener('visibilitychange', visibility); redraw.current = () => {}; };
   }, [nucleus, shells, playing, speed, zoom, view]);
   const keyDown = event => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home'].includes(event.key)) return;
@@ -140,8 +147,16 @@ export default function AtomShowcase() {
       <section className="atom-view" aria-label="Interactive atom visualization">
         <div className="atom-stage">
           <div className="atom-stage-heading">
-            <div><span className="atom-stage-kicker">{element.name} · Z = {protons}</span><strong>{element.symbol}<sup>{charge ? `${Math.abs(charge) === 1 ? '' : Math.abs(charge)}${charge > 0 ? '+' : '−'}` : ''}</sup><small>{protons + neutrons}</small></strong></div>
-            <span className="atom-stage-badge">SCHEMATIC · NOT TO SCALE</span>
+            <div className="atom-identity">
+              <span className="atom-stage-kicker">{element.name} · Z = {protons}</span>
+              <span className="atom-nuclide" role="img" aria-label={`${element.name}-${protons + neutrons}, atomic number ${protons}, ${charge ? `charge ${charge > 0 ? '+' : ''}${charge}` : 'neutral'}`}>
+                <span className="atom-mass-number" aria-hidden="true">{protons + neutrons}</span>
+                <span className="atom-atomic-number" aria-hidden="true">{protons}</span>
+                <strong aria-hidden="true">{element.symbol}</strong>
+                {charge !== 0 && <span className="atom-charge" aria-hidden="true">{Math.abs(charge) === 1 ? '' : Math.abs(charge)}{charge > 0 ? '+' : '−'}</span>}
+              </span>
+            </div>
+            <span className="atom-stage-badge">SCHEMATIC <span aria-hidden="true">·</span> NOT TO SCALE</span>
           </div>
           <div className="atom-viewport"><AtomCanvas protons={protons} neutrons={neutrons} electrons={electrons} playing={playing} speed={speed} zoom={zoom} view={view} resetVersion={resetVersion} /></div>
           <div className="atom-view-switch" aria-label="Atom visualization mode">
@@ -156,7 +171,7 @@ export default function AtomShowcase() {
           <label className="atom-speed"><span>Speed</span><input type="range" aria-label="Atom animation speed" min=".5" max="2" step=".5" value={speed} onChange={event => setSpeed(Number(event.target.value))} /><output>{speed}×</output></label>
         </div>
         <p className="atom-interaction-hint"><Move size={14} aria-hidden="true" />{view === 'spatial' ? 'Drag to rotate · Arrow keys to explore · Home to reset' : 'A flat view makes each electron shell easier to count.'}</p>
-        <div className="atom-shells" aria-label="Electron shell populations">{shells.length ? shells.map((count, index) => <span key={index} style={{ '--shell-color': shellPalette[index] }}><i />n = {index + 1}<strong>{count} e⁻</strong></span>) : <span>No electrons · bare nucleus</span>}</div>
+        <div className="atom-shells" aria-label="Electron shell populations">{shells.length ? shells.map((count, index) => <span key={index} style={{ '--shell-color': lightShellPalette[index], '--shell-color-dark': shellPalette[index] }}><i />n = {index + 1}<strong>{count} e⁻</strong></span>) : <span>No electrons · bare nucleus</span>}</div>
       </section>
       <aside className="atom-controls" aria-label="Atom parameters">
         <div className="atom-preset"><label htmlFor="atom-preset">Choose an element</label><select id="atom-preset" aria-label="Select predefined atom" value={preset} onChange={event => selectAtom(event.target.value)}>{elementsData.map(item => <option key={item.number} value={item.number}>{item.number}. {item.name} ({item.symbol})</option>)}</select><button type="button" onClick={() => selectAtom(preset)}><RotateCcw size={14} aria-hidden="true" />Reset atom to selected preset</button></div>

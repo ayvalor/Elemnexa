@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { X, HelpCircle, AlertTriangle, Lightbulb, Globe, Zap, Layers } from "lucide-react";
+import { X, HelpCircle, AlertTriangle, Lightbulb, Globe, Zap, Layers, ArrowUpRight, BookOpen } from "lucide-react";
 import { categoryNames } from "../data/elements";
+import "./element-drawer.css";
 
 const getCategoryColor = (category) => {
   switch (category) {
@@ -27,6 +28,22 @@ const safeDisplay = (value, fallback = "Not compiled") => {
   return value;
 };
 
+const sourceLabel = (url) => {
+  const hostname = new URL(url).hostname.replace(/^www\./, "");
+  if (hostname.endsWith("wikipedia.org")) return "Element overview · Wikipedia";
+  if (hostname.endsWith("ciaaw.org")) return "Atomic weights · CIAAW";
+  if (hostname.endsWith("rsc.org")) return "Periodic table · Royal Society of Chemistry";
+  if (hostname.endsWith("pubchem.ncbi.nlm.nih.gov")) return "Element data · PubChem";
+  if (hostname.endsWith("iupac.org")) return "Element reference · IUPAC";
+  if (hostname === "github.com" || hostname === "raw.githubusercontent.com") return "Reference dataset · GitHub";
+  return hostname;
+};
+
+const validSourceUrl = (url) => {
+  try { return new URL(url).protocol === "https:"; }
+  catch { return false; }
+};
+
 export default function ElementDrawer({ element, onClose }) {
   return <AnimatePresence>{element && <DrawerContent key={element.number} element={element} onClose={onClose} />}</AnimatePresence>;
 }
@@ -37,6 +54,7 @@ function DrawerContent({ element, onClose }) {
 
   const overlayRef = useRef(null);
   const panelRef = useRef(null);
+  const contentRef = useRef(null);
   const closeRef = useRef(null);
   const reducedMotion = useReducedMotion();
 
@@ -88,6 +106,11 @@ function DrawerContent({ element, onClose }) {
   }, [onClose]);
 
   const bgGradient = getCategoryColor(element.category);
+  const references = [...new Map([
+    ...(element.sourceUrls || []).filter(validSourceUrl).map(url => [url, { url, label: sourceLabel(url) }]),
+    ...(element.sourceReferences || []).filter(source => source && validSourceUrl(source.url))
+      .map(source => [source.url, { url: source.url, label: source.label || sourceLabel(source.url) }]),
+  ]).values()];
 
   // Split shell configuration for shell visualizer
   const shells = element.shellConfig && element.shellConfig !== "N/A"
@@ -155,7 +178,7 @@ function DrawerContent({ element, onClose }) {
             const index = tabs.indexOf(document.activeElement);
             const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
             tabs[next].focus(); tabs[next].click();
-          }} className="flex shrink-0 border-b border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-black/20 p-2 gap-1 overflow-x-auto">
+          }} className="element-detail-tabs">
             {[
               { id: "overview", label: "Overview" },
               { id: "structure", label: "Structure" },
@@ -170,12 +193,10 @@ function DrawerContent({ element, onClose }) {
                 aria-selected={activeTab === tab.id}
                 aria-controls={`element-${element.number}-panel`}
                 tabIndex={activeTab === tab.id ? 0 : -1}
-                onClick={() => setActiveTab(tab.id)}
-                className={`text-xs px-3.5 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "bg-white/80 dark:bg-white/10 text-slate-900 dark:text-white shadow-sm border border-slate-200 dark:border-white/15"
-                    : "text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5 border border-transparent"
-                }`}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  contentRef.current?.scrollTo({ top: 0 });
+                }}
               >
                 {tab.label}
               </button>
@@ -183,7 +204,7 @@ function DrawerContent({ element, onClose }) {
           </div>
 
           {/* Tab Content Area */}
-          <div role="tabpanel" id={`element-${element.number}-panel`} aria-labelledby={`element-${element.number}-tab-${activeTab}`} tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 flex flex-col gap-6 break-words">
+          <div ref={contentRef} role="tabpanel" id={`element-${element.number}-panel`} aria-labelledby={`element-${element.number}-tab-${activeTab}`} tabIndex={0} className="element-detail-content min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 flex flex-col gap-6 break-words">
             
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
@@ -290,10 +311,12 @@ function DrawerContent({ element, onClose }) {
                     <span className="text-base font-bold text-zinc-800 dark:text-white mt-1">
                       {typeof element.radius === "number" ? `${element.radius} pm` : safeDisplay(element.radius)}
                     </span>
+                    {element.radiusNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.radiusNote}</p>}
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Common Ions Formed</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.commonIons)}</span>
+                    {element.commonIonsNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.commonIonsNote}</p>}
                   </div>
                 </div>
               </div>
@@ -304,7 +327,7 @@ function DrawerContent({ element, onClose }) {
               <div className="flex flex-col gap-6">
                 
                 {/* Melting / Boiling points */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="element-physical-grid grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Melting Point</span>
                     <span className="text-sm font-bold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.meltingPoint)}</span>
@@ -316,7 +339,7 @@ function DrawerContent({ element, onClose }) {
                 </div>
 
                 {/* Physical metrics */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="element-physical-grid grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Density</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.density)}</span>
@@ -351,6 +374,7 @@ function DrawerContent({ element, onClose }) {
                   <div className="flex flex-col text-left border-t border-black/5 dark:border-white/5 pt-3">
                     <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Common Oxidation States</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-0.5">{safeDisplay(element.oxidationStates)}</span>
+                    {element.oxidationStatesNote && <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.oxidationStatesNote}</p>}
                   </div>
                 </div>
               </div>
@@ -365,7 +389,7 @@ function DrawerContent({ element, onClose }) {
                   <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
                     <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Discovery & History
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-left mt-1">
+                  <div className="element-history-grid grid grid-cols-2 gap-3 text-xs text-left mt-1">
                     <div>
                       <span className="text-zinc-500 dark:text-zinc-400 block">Discovery Year:</span>
                       <span className="font-semibold text-zinc-800 dark:text-white">{safeDisplay(element.discoveryYear)}</span>
@@ -377,7 +401,7 @@ function DrawerContent({ element, onClose }) {
                   </div>
                   {element.namedBy && element.namedBy !== element.discoveredBy && (
                     <div className="text-xs text-left mt-1">
-                      <span className="text-zinc-500 dark:text-zinc-400">Named By:</span>{" "}
+                      <span className="text-zinc-500 dark:text-zinc-400">Naming / name origin:</span>{" "}
                       <span className="font-semibold text-zinc-800 dark:text-white">{element.namedBy}</span>
                     </div>
                   )}
@@ -453,12 +477,20 @@ function DrawerContent({ element, onClose }) {
                 </div>
               </div>
             )}
-          </div>
-          
-          {/* Footer branding */}
-          <div className="shrink-0 p-4 bg-slate-100/80 dark:bg-black/40 border-t border-slate-200 dark:border-white/5 text-center text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-            <span className="block">{element.dataCompleteness || "Educational reference · Values depend on isotope and conditions."}</span>
-            {Array.isArray(element.sourceUrls) && <span className="mt-1 flex flex-wrap justify-center gap-3">{element.sourceUrls.filter(url => typeof url === "string" && url.startsWith("https://")).map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-indigo-600 dark:hover:text-indigo-300">Reference {index + 1}<span className="sr-only"> (opens in a new tab)</span></a>)}</span>}
+            <section className="element-references" aria-labelledby={`element-${element.number}-sources`}>
+              <h3 id={`element-${element.number}-sources`}><BookOpen size={16} aria-hidden="true" /> Sources & notes</h3>
+              <p>{element.dataCompleteness || "Educational reference · Values depend on isotope and conditions."}</p>
+              {references.length > 0 && (
+                <nav aria-label="Element reference sources">
+                  {references.map(({ url, label }) => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                      <span>{label}<span className="sr-only"> (opens in a new tab)</span></span>
+                      <ArrowUpRight size={15} aria-hidden="true" />
+                    </a>
+                  ))}
+                </nav>
+              )}
+            </section>
           </div>
         </motion.div>
       </motion.div>

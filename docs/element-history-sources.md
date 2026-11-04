@@ -1,0 +1,16 @@
+# Missing element history references
+
+`data/element-history.js` adds history to previously incomplete profiles. The integration must fill only `Not compiled` fields, with the two approved exceptions: cadmium and promethium had the invalid scraped naming values `Isotopes of cadmium` and `Isotopes of promethium`. Their replacements state the name origin explicitly.
+
+References retrieved on 2026-11-04:
+
+- [Mendeleev database, revision bd4716bff94c7acf22210d6ffb75dbd1fcc4f9bc](https://github.com/lmmentel/mendeleev/blob/bd4716bff94c7acf22210d6ffb75dbd1fcc4f9bc/mendeleev/elements.db): discovery, discoverer and name-origin columns. See the retained [MIT notice](licenses/mendeleev-MIT.txt).
+- [Periodica element data, revision 07fb9e3138475b093a76a189c30aefcc10e8d8e0](https://github.com/Bluegrams/periodic-table-data/blob/07fb9e3138475b093a76a189c30aefcc10e8d8e0/Periodica.Data/Data/ElementData.csv): independent discovery-date and discoverer comparison, particularly for transuranic elements. Its README identifies WebElements, RSC and Wikipedia as upstream references. See the retained [BSD 3-Clause notice](licenses/periodica-BSD-3-Clause.txt).
+- [Periodic Table JSON, revision a78c7a48fe7235cebd6153161a9e7fa70f0cfb30](https://github.com/Bowserinator/Periodic-Table-JSON/blob/a78c7a48fe7235cebd6153161a9e7fa70f0cfb30/PeriodicTableJSON.json): the application's existing reference, used to corroborate discoverers, synthesis histories and name origins. The added wording is a concise factual paraphrase.
+- [Andrejewski periodic table, revision 822077c676491adc28a63b167ceba3d642f83ffd](https://github.com/andrejewski/periodic-table/blob/822077c676491adc28a63b167ceba3d642f83ffd/data.json): consulted for a further comparison of discovery dates; not imported wholesale.
+
+These are secondary reference compilations. Direct RSC and Wikipedia page retrieval was unavailable in the environment (HTTP 403); the source links must not be described as a new primary-source verification. Conflicting and erroneous fields were not blindly copied. Examples excluded from import include Mendeleev's 1925 neodymium discovery date and its attribution of hassium's name to Henri Hess. The corresponding corroborated values are 1885 and the German state of Hesse. Confirmed nobelium discovery is listed as 1966, bohrium synthesis as 1981 and RIKEN's nihonium discovery as 2004, rather than earlier disputed claims or later recognition dates.
+
+Discovery, first isolation and publication can fall in different years. The display distinguishes these where useful (for example strontium, tungsten, protactinium, plutonium and flerovium). Ancient elements do not receive an invented precise discovery year. Shared discovery credit is retained for the historically disputed transfermium elements.
+
+Most retrieved datasets do not identify who first proposed a name. Where that attribution is not supported, the field explicitly says `Name origin:` and gives the element-specific etymology; it does not imply that the discoverer was necessarily the naming author. This field is presented as “Naming / name origin” in the interface. A known naming author is included where the retrieved material directly supports it, such as palladium and thorium.

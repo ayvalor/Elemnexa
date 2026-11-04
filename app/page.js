@@ -3,7 +3,7 @@
 import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
-import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical } from "lucide-react";
+import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
 import ElementDrawer from "../components/ElementDrawer";
 import { elementsData } from "../data/elements";
@@ -35,6 +35,10 @@ function subscribeTheme(callback) {
   };
 }
 const serverTheme = () => "light";
+
+function InstagramIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none" /></svg>;
+}
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("table");
@@ -128,10 +132,18 @@ export default function Home() {
         <footer className="site-footer no-print">
           <div className="footer-top">
             <div className="footer-identity"><span className="footer-mark"><Atom size={22} aria-hidden="true" /></span><div><strong>Rasayan Lab</strong><p>Stay curious. Keep discovering.</p></div></div>
-            <nav className="footer-links" aria-label="Footer workspaces">
+            <nav className="footer-links" aria-label="Explore and connect">
               <button type="button" onClick={exploreElements}>Explore elements</button>
               <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
             </nav>
+          </div>
+          <div className="footer-connect">
+            <div><strong>A thought, a question, a little feedback?</strong><p>Send it to @ayvalor on Instagram.</p></div>
+            <div className="footer-social-links">
+              <a className="instagram-link" href="https://www.instagram.com/ayvalor/" target="_blank" rel="noopener noreferrer" aria-label="@ayvalor on Instagram (opens in a new tab)"><InstagramIcon /><span>@ayvalor</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+              <a className="feedback-link" href="https://ig.me/m/ayvalor" target="_blank" rel="noopener noreferrer" aria-label="Send feedback via Instagram DM (opens in a new tab)"><MessageCircle size={17} aria-hidden="true" /><span>Send feedback</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+            </div>
+            <p className="footer-dm-note">Opens Instagram messages. You may need to sign in.</p>
           </div>
           <div className="footer-bottom"><p>Designed &amp; built by <strong>ayvalor</strong></p><p>Made for learning. Open to everyone.</p></div>
           <p className="footer-note">Educational models and reference data. Element notes identify isotope values, predictions, and properties that have not been measured.</p>

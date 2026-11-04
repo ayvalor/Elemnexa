@@ -82,6 +82,59 @@ test('physical enrichment preserves units and avoids presenting predicted superh
   assert.match(get('Xe').density,/g\/L \(0 °C, 1 atm\)/);
   assert.match(get('Rb').specificHeat,/J\/g·K/);
   assert.match(get('Cd').hazardWarning,/carcinogen/);
-  assert.equal(get('Og').meltingPoint,'Not compiled');
+  assert.equal(get('Og').meltingPoint,'Bulk melting point has not been measured');
   assert.equal(get('Og').phase,'Unknown');
+});
+
+test('missing element-detail placeholders are resolved and added sources are inspectable', () => {
+  const fields = ['discoveryYear', 'discoveredBy', 'namedBy', 'oxidationStates', 'commonIons', 'radius', 'meltingPoint', 'boilingPoint', 'density', 'specificHeat', 'ionizationEnergy', 'electronAffinity', 'electronegativity'];
+  for (const element of elementsData) {
+    for (const field of fields) {
+      const value = String(element[field] ?? '').trim();
+      assert.ok(value.length, `${element.symbol}.${field} must be informative`);
+      assert.doesNotMatch(value, /Not compiled|undefined/, `${element.symbol}.${field}`);
+    }
+    if (element.sourceReferences) {
+      assert.ok(element.sourceReferences.length);
+      for (const source of element.sourceReferences) {
+        assert.equal(new URL(source.url).protocol, 'https:');
+        assert.ok(source.label.length > 5);
+      }
+    }
+  }
+});
+
+test('history distinguishes antiquity, discovery and naming without scraped isotope titles', () => {
+  const get = symbol => elementsData.find(e => e.symbol === symbol);
+  assert.equal(get('Nd').discoveryYear, 1885);
+  assert.match(String(get('No').discoveryYear), /1966/);
+  assert.match(String(get('Bh').discoveryYear), /1981/);
+  assert.equal(get('Nh').discoveryYear, 2004);
+  assert.match(get('Ag').discoveryYear, /antiquity/);
+  assert.match(get('Hs').namedBy, /Hesse/);
+  assert.doesNotMatch(get('Hs').namedBy, /Henri/);
+  assert.match(get('Cd').namedBy, /kadmeia/);
+  assert.match(get('Pm').namedBy, /Prometheus/);
+});
+
+test('new heavy-element properties keep units, attachment sign and prediction qualifiers', () => {
+  const get = symbol => elementsData.find(e => e.symbol === symbol);
+  assert.match(get('At').electronAffinity, /[−-]233 kJ\/mol/);
+  assert.match(get('Fr').density, /theoretical estimate/);
+  assert.match(get('Og').boilingPoint, /estimate/);
+  assert.match(get('Og').ionizationEnergy, /No evaluated/);
+  assert.match(get('Hg').commonIons, /Hg₂²⁺/);
+  assert.match(get('Mo').commonIons, /MoO₄²⁻/);
+  assert.match(get('Tc').commonIons, /TcO₄⁻/);
+  for (const element of elementsData.filter(e => e.number >= 109)) {
+    assert.match(element.oxidationStates, /not experimentally established/);
+    assert.match(element.commonIons, /No established/);
+    assert.match(element.electronegativity, /No established Pauling/);
+    for (const field of ['meltingPoint', 'boilingPoint']) {
+      const value = element[field];
+      assert.match(value, /estimate|not been measured/);
+      const temperature = value.match(/^([\d.-]+) °C \/ ([\d.]+) K/);
+      if (temperature) assert.ok(Math.abs(Number(temperature[1]) + 273.15 - Number(temperature[2])) < .011);
+    }
+  }
 });

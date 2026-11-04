@@ -1,4 +1,7 @@
 // data/elements.js
+import { elementHistory, sourceReferences as historySources } from './element-history.js';
+import { elementChemistryReference } from './element-chemistry.js';
+import { elementIonReference } from './element-ion-reference.js';
 
 export const categoryNames = {
   "alkali": "Alkali Metals",
@@ -1864,5 +1867,35 @@ for (const element of elementsData) {
   if (hazardNotes[element.symbol]) element.hazardWarning = hazardNotes[element.symbol];
   if (!populatedNumbers.has(element.number) && (element.number === 43 || element.number === 61 || element.number >= 84)) {
     element.hazardWarning = "Radioactive element. Radiation and chemical hazards depend on isotope, activity, form, and exposure. Requires specialist controls; not a classroom handling material.";
+  }
+}
+
+// Enrich missing details without replacing previously populated facts.
+// Cd/Pm naming scrape errors are the two explicitly approved exceptions.
+for (const element of elementsData) {
+  const history = elementHistory[element.number];
+  const supplements = [
+    history && { fields: history, sources: historySources },
+    elementChemistryReference[element.number],
+    elementIonReference[element.number],
+  ].filter(Boolean);
+  const sources = new Map();
+  for (const reference of supplements) {
+    let applied = false;
+    for (const [field, value] of Object.entries(reference.fields)) {
+      const repairNaming = field === 'namedBy' && [48, 61].includes(element.number);
+      if (element[field] === 'Not compiled' || repairNaming) {
+        element[field] = value;
+        applied = true;
+      }
+    }
+    if (applied) {
+      Object.assign(element, reference.notes);
+      for (const source of reference.sources) sources.set(source.url, source);
+    }
+  }
+  if (sources.size) {
+    element.sourceReferences = [...sources.values()];
+    element.dataCompleteness = 'Reference values are accompanied by source links. Estimates, name origins and unavailable evaluated data are identified explicitly. Physical properties depend on conditions; ionic species also depend on their chemical environment.';
   }
 }

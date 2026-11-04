@@ -33,7 +33,7 @@ The initial npm audit reported 25 findings, including 1 critical and 8 high. Aft
 
 ## Validation
 
-Final local results: clean `npm ci`, zero lint errors/warnings, **22/22 unit cases**, **70/70 production-browser cases**, successful production build/startup, and **0 production dependency advisories**. All tests ran; none were skipped. Reference-backed physical-property coverage increased from 43 to 85 elements, while shell/configuration coverage is all 118.
+Latest local results (2026-11-04): zero lint errors/warnings, **25/25 unit cases**, **100/100 production-browser cases**, successful production build/startup, and **0 production dependency advisories**. All tests ran; none were skipped. A clean `npm ci` was verified during the initial repair; this follow-up does not change dependencies. Shell/configuration coverage remains all 118, and all 596 former `Not compiled` fields now have reference values or explicit availability notes.
 
 Run the documented commands in README.md. Unit regressions independently check formula parsing, exact balances, atom conservation across the entire reaction bank, molar masses, electron shells, isotope data, and worksheet filtering/formatting. Browser regressions cover five viewport sizes, both themes, local-storage failures, keyboard/modal interactions, calculations, filters, worksheet generation and print styling, response headers, and font requests. The production build is also exercised locally.
 
@@ -48,3 +48,11 @@ The GitHub Actions workflow repeats lint, unit tests, a production dependency au
 - Restyled element cards with consistent category colours, group headings, readable names, and richer mobile summaries.
 - Rebuilt the atom stage with high-DPI rendering, depth cues, a particle legend, principal-shell populations, 3D/flat modes, zoom/reset, and accurate playback controls. The model preserves particle counts and tool-switch state. It illustrates shells and nuclear composition, not literal quantum trajectories or nuclear stability.
 - Added targeted browser checks for exact label/card geometry, featured-element interactions, canvas rendering, keyboard rotation, camera reset, heavy-element counts, and play/pause behaviour, including the user's 776×751 viewport.
+
+## Element-detail and mobile follow-up
+
+- Filled 596 `Not compiled` fields across 75 incomplete profiles using the pinned references documented in [physical and ionic data](element-reference-sources.md) and [element history](element-history-sources.md). A before/after comparison confirms that existing populated facts remain unchanged except the two approved cadmium/promethium naming repairs. Estimates and unavailable evaluated values carry explicit qualifications.
+- Moved source links and notes into the drawer's scrolling content. Detail tabs wrap into two columns on narrow phones, have thin individual borders and retain keyboard navigation. Long history/property text wraps without horizontal overflow.
+- Added distinct light/dark atom palettes and redraws when the theme changes while animation is paused. Replaced off-edge isotope positioning with a mass/atomic-number/symbol/charge grid. Atom controls now have 44px touch targets.
+- Added thin borders to each main workspace tab, responsive label wrapping, an Instagram profile link and a feedback link to `ig.me/m/ayvalor`. The feedback link opens Instagram; it does not silently submit a message or collect a local feedback form.
+- Excluded generated Playwright reports/results from ESLint so browser trace bundles are not mistaken for application source.
