@@ -185,7 +185,7 @@ export const elementsData = [
     stseContext: "Essential micronutrient for plants. Widely used in insulating fiberglass and heat-resistant borosilicate glass (Pyrex) for scientific labs.",
     commonUses: "Borosilicate glass, cleaning detergents (borax), agricultural fertilizers, semiconductor doping, control rods in nuclear reactors.",
     hazardWarning: "Boric acid and borates can cause irritation on ingestion in large quantities. Generally low hazard in elementary form.",
-    commonIons: "B3+, BO3^3- (Borate)",
+    commonIons: "Borate species, e.g. B(OH)4−; no stable simple B3+ ion in water",
     mnemonic: "B: Boron (Baba Aligarh...)"
   },
   {
@@ -205,8 +205,8 @@ export const elementsData = [
     neutrons: 6,
     electrons: 6,
     radius: 67,
-    meltingPoint: "3550 °C / 3823 K (Sublimes)",
-    boilingPoint: "4827 °C / 5100 K",
+    meltingPoint: "Sublimes at atmospheric pressure; no normal melting point",
+    boilingPoint: "No normal boiling point at atmospheric pressure",
     density: "2.267 g/cm³ (graphite) / 3.515 g/cm³ (diamond)",
     specificHeat: "0.709 J/g·°C",
     ionizationEnergy: "1086.5 kJ/mol",
@@ -1380,7 +1380,7 @@ export const elementsData = [
     namedBy: "Ancient peoples",
     stseContext: "Symbol of wealth and global financial standard for millennia. High chemical inertness (does not tarnish or rust) makes it perfect for electronics.",
     commonUses: "Jewelry, financial gold bullion, corrosion-free electrical contacts in microelectronics, gold leaf gilding, dental crowns.",
-    hazardWarning: "Non-toxic and inert as a metal. Ingestion of elemental gold leaves is safe. Some gold salts are mildly toxic.",
+    hazardWarning: "Bulk elemental gold has low reactivity. Gold compounds can be toxic or cause allergic reactions; do not ingest laboratory materials.",
     commonIons: "Au3+ (Auric), Au+ (Aurous)",
     mnemonic: "Au: Gold (Au: Aur...)"
   },
@@ -1442,12 +1442,12 @@ export const elementsData = [
     ionizationEnergy: "1037 kJ/mol",
     electronAffinity: "N/A",
     electronegativity: "2.20",
-    oxidationStates: "0 (KrF2 equivalent RnF2 is rare)",
-    discoveryYear: 1899,
-    discoveredBy: "Rutherford & Owens",
-    namedBy: "Friedrich Ernst Dorn",
+    oxidationStates: "0; +2 reported in fluorine chemistry",
+    discoveryYear: 1900,
+    discoveredBy: "Friedrich Ernst Dorn (radium emanation); Rutherford and Owens observed thoron in 1899",
+    namedBy: "Name adopted internationally in 1923",
     stseContext: "Radioactive noble gas from natural decay of uranium in soils. Accumulates in basements, representing the second leading cause of lung cancer.",
-    commonUses: "Radiotherapy for cancer (historical), seismic gas monitor for predicting earthquakes, hydrological radioactive tracing.",
+    commonUses: "Historical radiotherapy and research in geochemical and hydrological tracing. Radon changes are not a reliable earthquake prediction method.",
     hazardWarning: "Class 1 carcinogen. Radioactive gas emitting alpha particles. Poses severe inhalation danger if inhaled into lungs.",
     commonIons: "Does not form stable ions",
     mnemonic: "Rn: Radon (Nehra, Agarkar, Zero Run...)"
@@ -1482,7 +1482,7 @@ export const elementsData = [
     namedBy: "Martin Heinrich Klaproth",
     stseContext: "Primary fuel for commercial nuclear power stations. Nucleus undergoes fission, releasing massive energy. Highly debated in energy security and arms control.",
     commonUses: "Nuclear reactor fuel (fission), military armor-piercing shells (depleted uranium), shield armor, radioactive dating.",
-    hazardWarning: "Highly radioactive and heavy-metal toxic. Causes kidney damage. Dangerous if ingested or inhaled. Regulated material.",
+    hazardWarning: "Radioactive heavy metal. Chemical toxicity can damage kidneys; inhaled or ingested material also poses radiation risks. Requires regulated handling.",
     commonIons: "U4+, UO2^2+ (Uranyl)",
     mnemonic: "U: Uranium (Thoda Pareshan U...)"
   }
@@ -1590,10 +1590,10 @@ const rawElements = [
 const populatedNumbers = new Set(elementsData.map(e => e.number));
 rawElements.forEach(elem => {
   if (!populatedNumbers.has(elem.number)) {
-    // Generate default secondary properties so the schema holds
+    // Uncompiled properties are explicitly absent, never inferred from group number.
     elementsData.push({
       ...elem,
-      valenceElectrons: elem.valenceElectrons || (elem.group ? (elem.group > 10 ? elem.group - 10 : elem.group) : 2),
+      valenceElectrons: "Variable",
       shellConfig: elem.shellConfig || "N/A",
       quantumConfig: elem.quantumConfig || "N/A",
       protons: elem.number,
@@ -1612,8 +1612,8 @@ rawElements.forEach(elem => {
       discoveredBy: "N/A",
       namedBy: "N/A",
       stseContext: `Chemical element ${elem.name} with symbol ${elem.symbol} and atomic number ${elem.number}.`,
-      commonUses: "Industrial applications and scientific research.",
-      hazardWarning: "Varies. Standard radioactive precautions for transuranic and superheavy elements.",
+      commonUses: elem.number >= 93 ? "Scientific research; no general consumer application." : "Specific applications have not yet been compiled in this reference.",
+      hazardWarning: "Hazards depend on the element, compound, form, and exposure. Consult the relevant safety data sheet before handling.",
       commonIons: "N/A",
       mnemonic: `${elem.symbol}: ${elem.name}`
     });
@@ -1622,3 +1622,247 @@ rawElements.forEach(elem => {
 
 // Sort array by atomic number to guarantee strict periodic order
 elementsData.sort((a, b) => a.number - b.number);
+
+
+// Electron-shell and configuration facts cross-checked against the referenced
+// per-element sources in Bowserinator/Periodic-Table-JSON, revision
+// a78c7a48fe7235cebd6153161a9e7fa70f0cfb30. No descriptive prose or images imported.
+// A leading * in that reference marks a predicted configuration.
+const configurationReference = {
+  1: [[1], "1s1", "https://en.wikipedia.org/wiki/Hydrogen"],
+  2: [[2], "1s2", "https://en.wikipedia.org/wiki/Helium"],
+  3: [[2, 1], "[He] 2s1", "https://en.wikipedia.org/wiki/Lithium"],
+  4: [[2, 2], "[He] 2s2", "https://en.wikipedia.org/wiki/Beryllium"],
+  5: [[2, 3], "[He] 2s2 2p1", "https://en.wikipedia.org/wiki/Boron"],
+  6: [[2, 4], "[He] 2s2 2p2", "https://en.wikipedia.org/wiki/Carbon"],
+  7: [[2, 5], "[He] 2s2 2p3", "https://en.wikipedia.org/wiki/Nitrogen"],
+  8: [[2, 6], "[He] 2s2 2p4", "https://en.wikipedia.org/wiki/Oxygen"],
+  9: [[2, 7], "[He] 2s2 2p5", "https://en.wikipedia.org/wiki/Fluorine"],
+  10: [[2, 8], "[He] 2s2 2p6", "https://en.wikipedia.org/wiki/Neon"],
+  11: [[2, 8, 1], "[Ne] 3s1", "https://en.wikipedia.org/wiki/Sodium"],
+  12: [[2, 8, 2], "[Ne] 3s2", "https://en.wikipedia.org/wiki/Magnesium"],
+  13: [[2, 8, 3], "[Ne] 3s2 3p1", "https://en.wikipedia.org/wiki/Aluminium"],
+  14: [[2, 8, 4], "[Ne] 3s2 3p2", "https://en.wikipedia.org/wiki/Silicon"],
+  15: [[2, 8, 5], "[Ne] 3s2 3p3", "https://en.wikipedia.org/wiki/Phosphorus"],
+  16: [[2, 8, 6], "[Ne] 3s2 3p4", "https://en.wikipedia.org/wiki/Sulfur"],
+  17: [[2, 8, 7], "[Ne] 3s2 3p5", "https://en.wikipedia.org/wiki/Chlorine"],
+  18: [[2, 8, 8], "[Ne] 3s2 3p6", "https://en.wikipedia.org/wiki/Argon"],
+  19: [[2, 8, 8, 1], "[Ar] 4s1", "https://en.wikipedia.org/wiki/Potassium"],
+  20: [[2, 8, 8, 2], "[Ar] 4s2", "https://en.wikipedia.org/wiki/Calcium"],
+  21: [[2, 8, 9, 2], "[Ar] 3d1 4s2", "https://en.wikipedia.org/wiki/Scandium"],
+  22: [[2, 8, 10, 2], "[Ar] 3d2 4s2", "https://en.wikipedia.org/wiki/Titanium"],
+  23: [[2, 8, 11, 2], "[Ar] 3d3 4s2", "https://en.wikipedia.org/wiki/Vanadium"],
+  24: [[2, 8, 13, 1], "[Ar] 3d5 4s1", "https://en.wikipedia.org/wiki/Chromium"],
+  25: [[2, 8, 13, 2], "[Ar] 3d5 4s2", "https://en.wikipedia.org/wiki/Manganese"],
+  26: [[2, 8, 14, 2], "[Ar] 3d6 4s2", "https://en.wikipedia.org/wiki/Iron"],
+  27: [[2, 8, 15, 2], "[Ar] 3d7 4s2", "https://en.wikipedia.org/wiki/Cobalt"],
+  28: [[2, 8, 16, 2], "[Ar] 3d8 4s2", "https://en.wikipedia.org/wiki/Nickel"],
+  29: [[2, 8, 18, 1], "[Ar] 3d10 4s1", "https://en.wikipedia.org/wiki/Copper"],
+  30: [[2, 8, 18, 2], "[Ar] 3d10 4s2", "https://en.wikipedia.org/wiki/Zinc"],
+  31: [[2, 8, 18, 3], "[Ar] 3d10 4s2 4p1", "https://en.wikipedia.org/wiki/Gallium"],
+  32: [[2, 8, 18, 4], "[Ar] 3d10 4s2 4p2", "https://en.wikipedia.org/wiki/Germanium"],
+  33: [[2, 8, 18, 5], "[Ar] 3d10 4s2 4p3", "https://en.wikipedia.org/wiki/Arsenic"],
+  34: [[2, 8, 18, 6], "[Ar] 3d10 4s2 4p4", "https://en.wikipedia.org/wiki/Selenium"],
+  35: [[2, 8, 18, 7], "[Ar] 3d10 4s2 4p5", "https://en.wikipedia.org/wiki/Bromine"],
+  36: [[2, 8, 18, 8], "[Ar] 3d10 4s2 4p6", "https://en.wikipedia.org/wiki/Krypton"],
+  37: [[2, 8, 18, 8, 1], "[Kr] 5s1", "https://en.wikipedia.org/wiki/Rubidium"],
+  38: [[2, 8, 18, 8, 2], "[Kr] 5s2", "https://en.wikipedia.org/wiki/Strontium"],
+  39: [[2, 8, 18, 9, 2], "[Kr] 4d1 5s2", "https://en.wikipedia.org/wiki/Yttrium"],
+  40: [[2, 8, 18, 10, 2], "[Kr] 4d2 5s2", "https://en.wikipedia.org/wiki/Zirconium"],
+  41: [[2, 8, 18, 12, 1], "[Kr] 4d4 5s1", "https://en.wikipedia.org/wiki/Niobium"],
+  42: [[2, 8, 18, 13, 1], "[Kr] 4d5 5s1", "https://en.wikipedia.org/wiki/Molybdenum"],
+  43: [[2, 8, 18, 13, 2], "[Kr] 4d5 5s2", "https://en.wikipedia.org/wiki/Technetium"],
+  44: [[2, 8, 18, 15, 1], "[Kr] 4d7 5s1", "https://en.wikipedia.org/wiki/Ruthenium"],
+  45: [[2, 8, 18, 16, 1], "[Kr] 4d8 5s1", "https://en.wikipedia.org/wiki/Rhodium"],
+  46: [[2, 8, 18, 18], "[Kr] 4d10", "https://en.wikipedia.org/wiki/Palladium"],
+  47: [[2, 8, 18, 18, 1], "[Kr] 4d10 5s1", "https://en.wikipedia.org/wiki/Silver"],
+  48: [[2, 8, 18, 18, 2], "[Kr] 4d10 5s2", "https://en.wikipedia.org/wiki/Cadmium"],
+  49: [[2, 8, 18, 18, 3], "[Kr] 4d10 5s2 5p1", "https://en.wikipedia.org/wiki/Indium"],
+  50: [[2, 8, 18, 18, 4], "[Kr] 4d10 5s2 5p2", "https://en.wikipedia.org/wiki/Tin"],
+  51: [[2, 8, 18, 18, 5], "[Kr] 4d10 5s2 5p3", "https://en.wikipedia.org/wiki/Antimony"],
+  52: [[2, 8, 18, 18, 6], "[Kr] 4d10 5s2 5p4", "https://en.wikipedia.org/wiki/Tellurium"],
+  53: [[2, 8, 18, 18, 7], "[Kr] 4d10 5s2 5p5", "https://en.wikipedia.org/wiki/Iodine"],
+  54: [[2, 8, 18, 18, 8], "[Kr] 4d10 5s2 5p6", "https://en.wikipedia.org/wiki/Xenon"],
+  55: [[2, 8, 18, 18, 8, 1], "[Xe] 6s1", "https://en.wikipedia.org/wiki/Cesium"],
+  56: [[2, 8, 18, 18, 8, 2], "[Xe] 6s2", "https://en.wikipedia.org/wiki/Barium"],
+  57: [[2, 8, 18, 18, 9, 2], "[Xe] 5d1 6s2", "https://en.wikipedia.org/wiki/Lanthanum"],
+  58: [[2, 8, 18, 19, 9, 2], "[Xe] 4f1 5d1 6s2", "https://en.wikipedia.org/wiki/Cerium"],
+  59: [[2, 8, 18, 21, 8, 2], "[Xe] 4f3 6s2", "https://en.wikipedia.org/wiki/Praseodymium"],
+  60: [[2, 8, 18, 22, 8, 2], "[Xe] 4f4 6s2", "https://en.wikipedia.org/wiki/Neodymium"],
+  61: [[2, 8, 18, 23, 8, 2], "[Xe] 4f5 6s2", "https://en.wikipedia.org/wiki/Promethium"],
+  62: [[2, 8, 18, 24, 8, 2], "[Xe] 4f6 6s2", "https://en.wikipedia.org/wiki/Samarium"],
+  63: [[2, 8, 18, 25, 8, 2], "[Xe] 4f7 6s2", "https://en.wikipedia.org/wiki/Europium"],
+  64: [[2, 8, 18, 25, 9, 2], "[Xe] 4f7 5d1 6s2", "https://en.wikipedia.org/wiki/Gadolinium"],
+  65: [[2, 8, 18, 27, 8, 2], "[Xe] 4f9 6s2", "https://en.wikipedia.org/wiki/Terbium"],
+  66: [[2, 8, 18, 28, 8, 2], "[Xe] 4f10 6s2", "https://en.wikipedia.org/wiki/Dysprosium"],
+  67: [[2, 8, 18, 29, 8, 2], "[Xe] 4f11 6s2", "https://en.wikipedia.org/wiki/Holmium"],
+  68: [[2, 8, 18, 30, 8, 2], "[Xe] 4f12 6s2", "https://en.wikipedia.org/wiki/Erbium"],
+  69: [[2, 8, 18, 31, 8, 2], "[Xe] 4f13 6s2", "https://en.wikipedia.org/wiki/Thulium"],
+  70: [[2, 8, 18, 32, 8, 2], "[Xe] 4f14 6s2", "https://en.wikipedia.org/wiki/Ytterbium"],
+  71: [[2, 8, 18, 32, 9, 2], "[Xe] 4f14 5d1 6s2", "https://en.wikipedia.org/wiki/Lutetium"],
+  72: [[2, 8, 18, 32, 10, 2], "[Xe] 4f14 5d2 6s2", "https://en.wikipedia.org/wiki/Hafnium"],
+  73: [[2, 8, 18, 32, 11, 2], "[Xe] 4f14 5d3 6s2", "https://en.wikipedia.org/wiki/Tantalum"],
+  74: [[2, 8, 18, 32, 12, 2], "[Xe] 4f14 5d4 6s2", "https://en.wikipedia.org/wiki/Tungsten"],
+  75: [[2, 8, 18, 32, 13, 2], "[Xe] 4f14 5d5 6s2", "https://en.wikipedia.org/wiki/Rhenium"],
+  76: [[2, 8, 18, 32, 14, 2], "[Xe] 4f14 5d6 6s2", "https://en.wikipedia.org/wiki/Osmium"],
+  77: [[2, 8, 18, 32, 15, 2], "[Xe] 4f14 5d7 6s2", "https://en.wikipedia.org/wiki/Iridium"],
+  78: [[2, 8, 18, 32, 17, 1], "[Xe] 4f14 5d9 6s1", "https://en.wikipedia.org/wiki/Platinum"],
+  79: [[2, 8, 18, 32, 18, 1], "[Xe] 4f14 5d10 6s1", "https://en.wikipedia.org/wiki/Gold"],
+  80: [[2, 8, 18, 32, 18, 2], "[Xe] 4f14 5d10 6s2", "https://en.wikipedia.org/wiki/Mercury (Element)"],
+  81: [[2, 8, 18, 32, 18, 3], "[Xe] 4f14 5d10 6s2 6p1", "https://en.wikipedia.org/wiki/Thallium"],
+  82: [[2, 8, 18, 32, 18, 4], "[Xe] 4f14 5d10 6s2 6p2", "https://en.wikipedia.org/wiki/Lead_(element)"],
+  83: [[2, 8, 18, 32, 18, 5], "[Xe] 4f14 5d10 6s2 6p3", "https://en.wikipedia.org/wiki/Bismuth"],
+  84: [[2, 8, 18, 32, 18, 6], "[Xe] 4f14 5d10 6s2 6p4", "https://en.wikipedia.org/wiki/Polonium"],
+  85: [[2, 8, 18, 32, 18, 7], "[Xe] 4f14 5d10 6s2 6p5", "https://en.wikipedia.org/wiki/Astatine"],
+  86: [[2, 8, 18, 32, 18, 8], "[Xe] 4f14 5d10 6s2 6p6", "https://en.wikipedia.org/wiki/Radon"],
+  87: [[2, 8, 18, 32, 18, 8, 1], "[Rn] 7s1", "https://en.wikipedia.org/wiki/Francium"],
+  88: [[2, 8, 18, 32, 18, 8, 2], "[Rn] 7s2", "https://en.wikipedia.org/wiki/Radium"],
+  89: [[2, 8, 18, 32, 18, 9, 2], "[Rn] 6d1 7s2", "https://en.wikipedia.org/wiki/Actinium"],
+  90: [[2, 8, 18, 32, 18, 10, 2], "[Rn] 6d2 7s2", "https://en.wikipedia.org/wiki/Thorium"],
+  91: [[2, 8, 18, 32, 20, 9, 2], "[Rn] 5f2 6d1 7s2", "https://en.wikipedia.org/wiki/Protactinium"],
+  92: [[2, 8, 18, 32, 21, 9, 2], "[Rn] 5f3 6d1 7s2", "https://en.wikipedia.org/wiki/Uranium"],
+  93: [[2, 8, 18, 32, 22, 9, 2], "[Rn] 5f4 6d1 7s2", "https://en.wikipedia.org/wiki/Neptunium"],
+  94: [[2, 8, 18, 32, 24, 8, 2], "[Rn] 5f6 7s2", "https://en.wikipedia.org/wiki/Plutonium"],
+  95: [[2, 8, 18, 32, 25, 8, 2], "[Rn] 5f7 7s2", "https://en.wikipedia.org/wiki/Americium"],
+  96: [[2, 8, 18, 32, 25, 9, 2], "[Rn] 5f7 6d1 7s2", "https://en.wikipedia.org/wiki/Curium"],
+  97: [[2, 8, 18, 32, 27, 8, 2], "[Rn] 5f9 7s2", "https://en.wikipedia.org/wiki/Berkelium"],
+  98: [[2, 8, 18, 32, 28, 8, 2], "[Rn] 5f10 7s2", "https://en.wikipedia.org/wiki/Californium"],
+  99: [[2, 8, 18, 32, 29, 8, 2], "[Rn] 5f11 7s2", "https://en.wikipedia.org/wiki/Einsteinium"],
+  100: [[2, 8, 18, 32, 30, 8, 2], "[Rn] 5f12 7s2", "https://en.wikipedia.org/wiki/Fermium"],
+  101: [[2, 8, 18, 32, 31, 8, 2], "[Rn] 5f13 7s2", "https://en.wikipedia.org/wiki/Mendelevium"],
+  102: [[2, 8, 18, 32, 32, 8, 2], "[Rn] 5f14 7s2", "https://en.wikipedia.org/wiki/Nobelium"],
+  103: [[2, 8, 18, 32, 32, 8, 3], "[Rn] 5f14 7s2 7p1", "https://en.wikipedia.org/wiki/Lawrencium"],
+  104: [[2, 8, 18, 32, 32, 10, 2], "[Rn] 5f14 6d2 7s2", "https://en.wikipedia.org/wiki/Rutherfordium"],
+  105: [[2, 8, 18, 32, 32, 11, 2], "*[Rn] 5f14 6d3 7s2", "https://en.wikipedia.org/wiki/Dubnium"],
+  106: [[2, 8, 18, 32, 32, 12, 2], "*[Rn] 5f14 6d4 7s2", "https://en.wikipedia.org/wiki/Seaborgium"],
+  107: [[2, 8, 18, 32, 32, 13, 2], "*[Rn] 5f14 6d5 7s2", "https://en.wikipedia.org/wiki/Bohrium"],
+  108: [[2, 8, 18, 32, 32, 14, 2], "*[Rn] 5f14 6d6 7s2", "https://en.wikipedia.org/wiki/Hassium"],
+  109: [[2, 8, 18, 32, 32, 15, 2], "*[Rn] 5f14 6d7 7s2", "https://en.wikipedia.org/wiki/Meitnerium"],
+  110: [[2, 8, 18, 32, 32, 17, 1], "*[Rn] 5f14 6d9 7s1", "https://en.wikipedia.org/wiki/Darmstadtium"],
+  111: [[2, 8, 18, 32, 32, 18, 1], "*[Rn] 5f14 6d10 7s1", "https://en.wikipedia.org/wiki/Roentgenium"],
+  112: [[2, 8, 18, 32, 32, 18, 2], "*[Rn] 5f14 6d10 7s2", "https://en.wikipedia.org/wiki/Copernicium"],
+  113: [[2, 8, 18, 32, 32, 18, 3], "*[Rn] 5f14 6d10 7s2 7p1", "https://en.wikipedia.org/wiki/Ununtrium"],
+  114: [[2, 8, 18, 32, 32, 18, 4], "*[Rn] 5f14 6d10 7s2 7p2", "https://en.wikipedia.org/wiki/Flerovium"],
+  115: [[2, 8, 18, 32, 32, 18, 5], "*[Rn] 5f14 6d10 7s2 7p3", "https://en.wikipedia.org/wiki/Ununpentium"],
+  116: [[2, 8, 18, 32, 32, 18, 6], "*[Rn] 5f14 6d10 7s2 7p4", "https://en.wikipedia.org/wiki/Livermorium"],
+  117: [[2, 8, 18, 32, 32, 18, 7], "*[Rn] 5f14 6d10 7s2 7p5", "https://en.wikipedia.org/wiki/Tennessine"],
+  118: [[2, 8, 18, 32, 32, 18, 8], "*[Rn] 5f14 6d10 7s2 7p6", "https://en.wikipedia.org/wiki/Oganesson"],
+};
+
+const illustrativeIsotopes = [1, 4, 7, 9, 11, 12, 14, 16, 19, 20, 23, 24, 27, 28, 31, 32, 35, 40, 39, 40, 45, 48, 51, 52, 55, 56, 59, 58, 63, 64, 69, 74, 75, 80, 79, 84, 85, 88, 89, 90, 93, 98, 98, 102, 103, 106, 107, 114, 115, 120, 121, 130, 127, 132, 133, 138, 139, 140, 141, 142, 145, 152, 153, 158, 159, 164, 165, 166, 169, 174, 175, 180, 181, 184, 187, 192, 193, 195, 197, 202, 205, 208, 209, 209, 210, 222, 223, 226, 227, 232, 231, 238, 237, 244, 243, 247, 247, 251, 252, 257, 258, 259, 262, 267, 268, 269, 270, 269, 278, 281, 282, 285, 286, 289, 290, 293, 294, 294];
+const isotopeMassElements = new Set([43, 61, ...Array.from({ length: 6 }, (_, i) => i + 84), ...Array.from({ length: 26 }, (_, i) => i + 93)]);
+
+for (const element of elementsData) {
+  const [shells, configuration, source] = configurationReference[element.number];
+  element.shellConfig = shells.join(", ");
+  element.configurationPredicted = configuration.startsWith("*");
+  element.quantumConfig = configuration.replace(/^\*/, "").replace(/(\d[spdf])(\d+)/g, "$1^$2") + (element.configurationPredicted ? " (predicted)" : "");
+  element.outerShellElectrons = shells.at(-1);
+  element.massType = isotopeMassElements.has(element.number) ? "representative isotope mass number" : "standard atomic weight";
+  element.massNumber = illustrativeIsotopes[element.number - 1];
+  element.neutrons = element.massNumber - element.number;
+  element.isotopeNote = `Neutrons are shown for ${element.symbol}-${element.massNumber}, an illustrative isotope. Other isotopes have different neutron counts. Atomic weight is not a neutron count.`;
+  element.valenceElectrons = element.block === "d" || element.block === "f" ? "Variable" : element.outerShellElectrons;
+  element.valenceNote = element.block === "d" || element.block === "f"
+    ? "Transition and inner-transition elements can use electrons from more than one shell in bonding. Valence depends on chemical context."
+    : "Outer-shell electrons for a neutral atom; this is not an oxidation state or ion charge.";
+  element.synthetic = element.number === 43 || element.number === 61 || element.number >= 93;
+  if (element.phase === "Synthetic") element.phase = "Unknown";
+  element.phaseNote = element.phase === "Unknown" ? "Bulk phase has not been established experimentally." : "Room-temperature reference phase; allotropes and pressure can change properties.";
+  element.dataCompleteness = populatedNumbers.has(element.number) ? "Selected educational properties; conditions and conventions matter." : "Basic reference data; further physical and historical properties are not yet compiled.";
+  element.sourceUrls = [source, "https://ciaaw.org/atomic-weights.htm", "https://github.com/Bowserinator/Periodic-Table-JSON/tree/a78c7a48fe7235cebd6153161a9e7fa70f0cfb30"];
+  if ([2, 10, 18, 36, 54].includes(element.number)) element.electronAffinity = "No stable isolated anion";
+  element.electronAffinityNote = "Listed energy change for adding an electron to a gaseous atom: negative values indicate energy released. Values depend on this sign convention.";
+  if (!populatedNumbers.has(element.number)) {
+    for (const field of ["radius", "meltingPoint", "boilingPoint", "density", "specificHeat", "ionizationEnergy", "electronAffinity", "electronegativity", "oxidationStates", "discoveryYear", "discoveredBy", "namedBy", "commonIons"]) {
+      if (element[field] === "N/A") element[field] = "Not compiled";
+    }
+  }
+}
+
+
+// Additional scalar reference facts (same pinned source). Restrict physical
+// enrichment to Z <= 83: do not silently present superheavy predictions as measured.
+// Gas densities refer to 0 °C and 1 atm; solid/liquid values are reference values.
+const physicalReference = {
+  37: {"melt": 312.45, "boil": 961, "density": 1.532, "density_unit": "g/cm3", "molar_heat": 31.06, "electron_affinity": 46.884, "electronegativity_pauling": 0.82, "discovered_by": "Robert Bunsen", "ionization": 403, "radius": 265},
+  38: {"melt": 1050, "boil": 1650, "density": 2.64, "density_unit": "g/cm3", "molar_heat": 26.4, "electron_affinity": 5.023, "electronegativity_pauling": 0.95, "discovered_by": "Adair Crawford (identification, 1790); Humphry Davy (isolation, 1808)", "ionization": 549.5, "radius": 219},
+  39: {"melt": 1799, "boil": 3203, "density": 4.472, "density_unit": "g/cm3", "molar_heat": 26.53, "electron_affinity": 29.6, "electronegativity_pauling": 1.22, "discovered_by": "Johan Gadolin", "ionization": 600, "radius": 212},
+  40: {"melt": 2128, "boil": 4650, "density": 6.52, "density_unit": "g/cm3", "molar_heat": 25.36, "electron_affinity": 41.806, "electronegativity_pauling": 1.33, "discovered_by": "Martin Heinrich Klaproth", "ionization": 640.1, "radius": 206},
+  41: {"melt": 2750, "boil": 5017, "density": 8.57, "density_unit": "g/cm3", "molar_heat": 24.6, "electron_affinity": 88.516, "electronegativity_pauling": 1.6, "discovered_by": "Charles Hatchett", "ionization": 652.1, "radius": 198},
+  42: {"melt": 2896, "boil": 4912, "density": 10.28, "density_unit": "g/cm3", "molar_heat": 24.06, "electron_affinity": 72.1, "electronegativity_pauling": 2.16, "discovered_by": "Carl Wilhelm Scheele", "ionization": 684.3, "radius": 190},
+  43: {"melt": 2430, "boil": 4538, "density": 11, "density_unit": "g/cm3", "molar_heat": 24.27, "electron_affinity": 53, "electronegativity_pauling": 1.9, "discovered_by": "Carlo Perrier and Emilio Segrè", "ionization": 702, "radius": 183},
+  44: {"melt": 2607, "boil": 4423, "density": 12.45, "density_unit": "g/cm3", "molar_heat": 24.06, "electron_affinity": 100.96, "electronegativity_pauling": 2.2, "discovered_by": "Karl Ernst Claus", "ionization": 710.2, "radius": 178},
+  45: {"melt": 2237, "boil": 3968, "density": 12.41, "density_unit": "g/cm3", "molar_heat": 24.98, "electron_affinity": 110.27, "electronegativity_pauling": 2.28, "discovered_by": "William Hyde Wollaston", "ionization": 719.7, "radius": 173},
+  46: {"melt": 1828.05, "boil": 3236, "density": 12.023, "density_unit": "g/cm3", "molar_heat": 25.98, "electron_affinity": 54.24, "electronegativity_pauling": 2.2, "discovered_by": "William Hyde Wollaston", "ionization": 804.4, "radius": 169},
+  47: {"melt": 1234.93, "boil": 2435, "density": 10.49, "density_unit": "g/cm3", "molar_heat": 25.35, "electron_affinity": 125.862, "electronegativity_pauling": 1.93, "discovered_by": "unknown, before 5000 BC", "ionization": 731, "radius": 165},
+  48: {"melt": 594.22, "boil": 1040, "density": 8.65, "density_unit": "g/cm3", "molar_heat": 26.02, "electron_affinity": -68, "electronegativity_pauling": 1.69, "discovered_by": "Karl Samuel Leberecht Hermann", "named_by": "Isotopes of cadmium", "ionization": 867.8, "radius": 161},
+  49: {"melt": 429.7485, "boil": 2345, "density": 7.31, "density_unit": "g/cm3", "molar_heat": 26.74, "electron_affinity": 37.043, "electronegativity_pauling": 1.78, "discovered_by": "Ferdinand Reich and Hieronymus Theodor Richter", "ionization": 558.3, "radius": 156},
+  50: {"melt": 505.08, "boil": 2875, "density": 7.365, "density_unit": "g/cm3", "molar_heat": 27.112, "electron_affinity": 107.2984, "electronegativity_pauling": 1.96, "discovered_by": "unknown, before 3500 BC", "ionization": 708.6, "radius": 145},
+  51: {"melt": 903.78, "boil": 1908, "density": 6.697, "density_unit": "g/cm3", "molar_heat": 25.23, "electron_affinity": 101.059, "electronegativity_pauling": 2.05, "discovered_by": "unknown, before 3000 BC", "ionization": 834, "radius": 133},
+  52: {"melt": 722.66, "boil": 1261, "density": 6.24, "density_unit": "g/cm3", "molar_heat": 25.73, "electron_affinity": 190.161, "electronegativity_pauling": 2.1, "discovered_by": "Franz-Joseph Müller von Reichenstein", "ionization": 869.3, "radius": 123},
+  53: {"melt": 386.85, "boil": 457.4, "density": 4.933, "density_unit": "g/cm3", "electron_affinity": 295.1531, "electronegativity_pauling": 2.66, "discovered_by": "Bernard Courtois", "ionization": 1008.4, "radius": 115},
+  54: {"melt": 161.4, "boil": 165.051, "density": 5.894, "density_unit": "g/L", "electron_affinity": -77, "electronegativity_pauling": 2.6, "discovered_by": "William Ramsay and Morris Travers", "ionization": 1170.4, "radius": 108},
+  55: {"melt": 301.7, "boil": 944, "density": 1.93, "density_unit": "g/cm3", "molar_heat": 32.21, "electron_affinity": 45.505, "electronegativity_pauling": 0.79, "discovered_by": "Robert Bunsen", "ionization": 375.7, "radius": 298},
+  56: {"melt": 1000, "boil": 2118, "density": 3.51, "density_unit": "g/cm3", "molar_heat": 28.07, "electron_affinity": 13.954, "electronegativity_pauling": 0.89, "discovered_by": "Carl Wilhelm Scheele", "ionization": 502.9, "radius": 253},
+  57: {"melt": 1193, "boil": 3737, "density": 6.162, "density_unit": "g/cm3", "molar_heat": 27.11, "electron_affinity": 53, "electronegativity_pauling": 1.1, "discovered_by": "Carl Gustaf Mosander", "ionization": 538.1, "radius": 226},
+  58: {"melt": 1068, "boil": 3716, "density": 6.77, "density_unit": "g/cm3", "molar_heat": 26.94, "electron_affinity": 55, "electronegativity_pauling": 1.12, "discovered_by": "Jöns Jacob Berzelius and Wilhelm Hisinger; independently Martin Heinrich Klaproth", "ionization": 534.4, "radius": 210},
+  59: {"melt": 1208, "boil": 3403, "density": 6.77, "density_unit": "g/cm3", "molar_heat": 27.2, "electron_affinity": 93, "electronegativity_pauling": 1.13, "discovered_by": "Carl Auer von Welsbach", "ionization": 527, "radius": 247},
+  60: {"melt": 1297, "boil": 3347, "density": 7.01, "density_unit": "g/cm3", "molar_heat": 27.45, "electron_affinity": 184.87, "electronegativity_pauling": 1.14, "discovered_by": "Carl Auer von Welsbach", "ionization": 533.1, "radius": 206},
+  61: {"melt": 1315, "boil": 3273, "density": 7.26, "density_unit": "g/cm3", "electron_affinity": 12.45, "electronegativity_pauling": 1.13, "discovered_by": "Jacob A. Marinsky, Lawrence E. Glendenin, and Charles D. Coryell", "named_by": "Isotopes of promethium", "ionization": 540, "radius": 205},
+  62: {"melt": 1345, "boil": 2173, "density": 7.52, "density_unit": "g/cm3", "molar_heat": 29.54, "electron_affinity": 15.63, "electronegativity_pauling": 1.17, "discovered_by": "Lecoq de Boisbaudran", "ionization": 544.5, "radius": 238},
+  63: {"melt": 1099, "boil": 1802, "density": 5.264, "density_unit": "g/cm3", "molar_heat": 27.66, "electron_affinity": 11.2, "electronegativity_pauling": 1.2, "discovered_by": "Eugène-Anatole Demarçay", "ionization": 547.1, "radius": 231},
+  64: {"melt": 1585, "boil": 3273, "density": 7.9, "density_unit": "g/cm3", "molar_heat": 37.03, "electron_affinity": 13.22, "electronegativity_pauling": 1.2, "discovered_by": "Jean Charles Galissard de Marignac", "ionization": 593.4, "radius": 233},
+  65: {"melt": 1629, "boil": 3396, "density": 8.23, "density_unit": "g/cm3", "molar_heat": 28.91, "electron_affinity": 112.4, "electronegativity_pauling": 1.1, "discovered_by": "Carl Gustaf Mosander", "ionization": 565.8, "radius": 225},
+  66: {"melt": 1680, "boil": 2840, "density": 8.54, "density_unit": "g/cm3", "molar_heat": 27.7, "electron_affinity": 33.96, "electronegativity_pauling": 1.22, "discovered_by": "Lecoq de Boisbaudran", "ionization": 573, "radius": 228},
+  67: {"melt": 1734, "boil": 2873, "density": 8.79, "density_unit": "g/cm3", "molar_heat": 27.15, "electron_affinity": 32.61, "electronegativity_pauling": 1.23, "discovered_by": "Marc Delafontaine", "ionization": 581, "radius": 226},
+  68: {"melt": 1802, "boil": 3141, "density": 9.066, "density_unit": "g/cm3", "molar_heat": 28.12, "electron_affinity": 30.1, "electronegativity_pauling": 1.24, "discovered_by": "Carl Gustaf Mosander", "ionization": 589.3, "radius": 226},
+  69: {"melt": 1818, "boil": 2223, "density": 9.32, "density_unit": "g/cm3", "molar_heat": 27.03, "electron_affinity": 99, "electronegativity_pauling": 1.25, "discovered_by": "Per Teodor Cleve", "ionization": 596.7, "radius": 222},
+  70: {"melt": 1097, "boil": 1469, "density": 6.9, "density_unit": "g/cm3", "molar_heat": 26.74, "electron_affinity": -1.93, "electronegativity_pauling": 1.1, "discovered_by": "Jean Charles Galissard de Marignac", "ionization": 603.4, "radius": 222},
+  71: {"melt": 1925, "boil": 3675, "density": 9.841, "density_unit": "g/cm3", "molar_heat": 26.86, "electron_affinity": 33.4, "electronegativity_pauling": 1.27, "discovered_by": "Georges Urbain and Carl Auer von Welsbach (independent discoveries)", "ionization": 523.5, "radius": 217},
+  72: {"melt": 2506, "boil": 4876, "density": 13.31, "density_unit": "g/cm3", "molar_heat": 25.73, "electron_affinity": 17.18, "electronegativity_pauling": 1.3, "discovered_by": "Dirk Coster", "ionization": 658.5, "radius": 208},
+  73: {"melt": 3290, "boil": 5731, "density": 16.69, "density_unit": "g/cm3", "molar_heat": 25.36, "electron_affinity": 31, "electronegativity_pauling": 1.5, "discovered_by": "Anders Gustaf Ekeberg", "ionization": 761, "radius": 200},
+  74: {"melt": 3695, "boil": 6203, "density": 19.25, "density_unit": "g/cm3", "molar_heat": 24.27, "electron_affinity": 78.76, "electronegativity_pauling": 2.36, "discovered_by": "Carl Wilhelm Scheele", "ionization": 770, "radius": 193},
+  75: {"melt": 3459, "boil": 5869, "density": 21.02, "density_unit": "g/cm3", "molar_heat": 25.48, "electron_affinity": 5.8273, "electronegativity_pauling": 1.9, "discovered_by": "Walter Noddack, Ida Tacke, and Otto Berg", "named_by": "Walter Noddack", "ionization": 760, "radius": 188},
+  76: {"melt": 3306, "boil": 5285, "density": 22.59, "density_unit": "g/cm3", "molar_heat": 24.7, "electron_affinity": 103.99, "electronegativity_pauling": 2.2, "discovered_by": "Smithson Tennant", "ionization": 840, "radius": 185},
+  77: {"melt": 2719, "boil": 4403, "density": 22.56, "density_unit": "g/cm3", "molar_heat": 25.1, "electron_affinity": 150.94, "electronegativity_pauling": 2.2, "discovered_by": "Smithson Tennant", "ionization": 880, "radius": 180},
+  78: {"melt": 2041.4, "boil": 4098, "density": 21.45, "density_unit": "g/cm3", "molar_heat": 25.86, "electron_affinity": 205.041, "electronegativity_pauling": 2.28, "discovered_by": "Antonio de Ulloa", "ionization": 870, "radius": 177},
+  79: {"melt": 1337.33, "boil": 3243, "density": 19.3, "density_unit": "g/cm3", "molar_heat": 25.418, "electron_affinity": 222.747, "electronegativity_pauling": 2.54, "discovered_by": "Middle East", "ionization": 890.1, "radius": 174},
+  80: {"melt": 234.321, "boil": 629.88, "density": 13.534, "density_unit": "g/cm3", "molar_heat": 27.983, "electron_affinity": -48, "electronegativity_pauling": 2, "discovered_by": "unknown, before 2000 BCE", "ionization": 1007.1, "radius": 171},
+  81: {"melt": 577, "boil": 1746, "density": 11.85, "density_unit": "g/cm3", "molar_heat": 26.32, "electron_affinity": 36.4, "electronegativity_pauling": 1.62, "discovered_by": "William Crookes", "ionization": 589.4, "radius": 156},
+  82: {"melt": 600.61, "boil": 2022, "density": 11.34, "density_unit": "g/cm3", "molar_heat": 26.65, "electron_affinity": 34.4204, "electronegativity_pauling": 1.87, "discovered_by": "Middle East", "ionization": 715.6, "radius": 154},
+  83: {"melt": 544.7, "boil": 1837, "density": 9.78, "density_unit": "g/cm3", "molar_heat": 25.52, "electron_affinity": 90.924, "electronegativity_pauling": 2.02, "discovered_by": "Claude François Geoffroy", "ionization": 703, "radius": 143},
+};
+const formatTemperature = kelvin => `${Number((kelvin - 273.15).toFixed(2))} °C / ${kelvin} K`;
+for (const element of elementsData) {
+  const reference = physicalReference[element.number];
+  if (reference && !populatedNumbers.has(element.number)) {
+    if (reference.melt != null) element.meltingPoint = formatTemperature(reference.melt);
+    if (reference.boil != null) element.boilingPoint = formatTemperature(reference.boil);
+    if (reference.density != null) element.density = `${reference.density} ${reference.density_unit === "g/L" ? "g/L (0 °C, 1 atm)" : "g/cm³"}`;
+    if (reference.molar_heat != null) element.specificHeat = `${Number((reference.molar_heat / element.mass).toFixed(4))} J/g·K (derived from molar heat capacity)`;
+    if (reference.radius != null) element.radius = reference.radius;
+    if (reference.ionization != null) element.ionizationEnergy = `${reference.ionization} kJ/mol`;
+    if (reference.electron_affinity != null && element.number !== 54) element.electronAffinity = `${-reference.electron_affinity} kJ/mol`;
+    if (reference.electronegativity_pauling != null) element.electronegativity = String(reference.electronegativity_pauling);
+    if (reference.discovered_by != null) element.discoveredBy = reference.discovered_by;
+    if (reference.named_by != null) element.namedBy = reference.named_by;
+    element.dataCompleteness = "Reference physical properties compiled; unavailable fields are marked. Values vary with conditions and sources.";
+  }
+  element.radiusNote = "Calculated atomic radius in picometres; empirical and covalent radii use different definitions.";
+}
+
+// Material-specific hazards should not disappear just because a full profile is absent.
+const hazardNotes = {
+  Rb: "Highly reactive metal; contact with water can cause fire and release flammable hydrogen. Requires specialist handling.",
+  Sr: "Reactive metal; reacts with water. Chemical and radiological hazards depend on the compound and isotope.",
+  Cd: "Toxic metal and a human carcinogen. Dust and fumes can damage lungs and kidneys; avoid exposure.",
+  Hg: "Toxic metal. Mercury vapour can damage the nervous system; do not handle spills without trained assistance.",
+  Tl: "Highly toxic metal and compounds. Exposure can cause severe systemic and neurological harm.",
+};
+for (const element of elementsData) {
+  if (hazardNotes[element.symbol]) element.hazardWarning = hazardNotes[element.symbol];
+  if (!populatedNumbers.has(element.number) && (element.number === 43 || element.number === 61 || element.number >= 84)) {
+    element.hazardWarning = "Radioactive element. Radiation and chemical hazards depend on isotope, activity, form, and exposure. Requires specialist controls; not a classroom handling material.";
+  }
+}

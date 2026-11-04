@@ -1,235 +1,117 @@
 "use client";
 
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 import { elementsData, categoryNames } from "../data/elements";
 import ElementCard from "./ElementCard";
-import { Search, RotateCcw } from "lucide-react";
+import { Search, RotateCcw, ArrowRight, SlidersHorizontal } from "lucide-react";
+
+const categories = Object.entries(categoryNames);
+const phases = ["Solid", "Liquid", "Gas", "Unknown"];
+const filterClass = "min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors";
+const selectedClass = "border-indigo-500/50 bg-indigo-500/15 text-indigo-700 dark:text-indigo-200";
+const idleClass = "border-slate-200 bg-white/40 text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10";
 
 export default function PeriodicTable({ onElementClick }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [block, setBlock] = useState("");
   const [phase, setPhase] = useState("");
-
-  const activeFilters = { search, category, block, phase };
-
-  const handleReset = () => {
-    setSearch("");
-    setCategory("");
-    setBlock("");
-    setPhase("");
-  };
-
-  const categories = [
-    { id: "alkali", label: "Alkali", color: "bg-group-alkali/15 text-group-alkali border-group-alkali/30" },
-    { id: "alkaline", label: "Alkaline", color: "bg-group-alkaline/15 text-group-alkaline border-group-alkaline/30" },
-    { id: "transition", label: "Transition", color: "bg-group-transition/15 text-group-transition border-group-transition/30" },
-    { id: "post-transition", label: "Post-trans", color: "bg-group-post-transition/15 text-group-post-transition border-group-post-transition/30" },
-    { id: "metalloid", label: "Metalloid", color: "bg-group-metalloid/15 text-group-metalloid border-group-metalloid/30" },
-    { id: "reactive-nonmetal", label: "Nonmetals", color: "bg-group-reactive-nonmetal/15 text-group-reactive-nonmetal border-group-reactive-nonmetal/30" },
-    { id: "halogen", label: "Halogens", color: "bg-group-halogen/15 text-group-halogen border-group-halogen/30" },
-    { id: "noble", label: "Noble Gases", color: "bg-group-noble/15 text-group-noble border-group-noble/30" },
-    { id: "lanthanide", label: "Lanthanide", color: "bg-group-lanthanide/15 text-group-lanthanide border-group-lanthanide/30" },
-    { id: "actinide", label: "Actinide", color: "bg-group-actinide/15 text-group-actinide border-group-actinide/30" },
-  ];
+  const [syntheticOnly, setSyntheticOnly] = useState(false);
+  const hasFilters = Boolean(search || category || block || phase || syntheticOnly);
+  const filteredElements = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return elementsData.filter(element => (
+      (!query || element.name.toLowerCase().includes(query) || element.symbol.toLowerCase().includes(query) || String(element.number) === query) &&
+      (!category || element.category === category) &&
+      (!block || element.block === block) &&
+      (!phase || element.phase === phase) &&
+      (!syntheticOnly || element.synthetic)
+    ));
+  }, [search, category, block, phase, syntheticOnly]);
+  const matches = useMemo(() => new Set(filteredElements.map(element => element.number)), [filteredElements]);
+  const reset = () => { setSearch(""); setCategory(""); setBlock(""); setPhase(""); setSyntheticOnly(false); };
 
   return (
-    <div className="w-full flex flex-col gap-6">
-      {/* Search & Filter Header Ribbon */}
-      <div className="glass-panel w-full p-4 rounded-2xl flex flex-col gap-4 no-print select-none">
-        <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-          
-          {/* Search bar */}
-          <div className="relative w-full lg:max-w-md">
-            <span className="absolute inset-y-0 left-3 flex items-center text-slate-400 dark:text-zinc-400">
-              <Search className="w-4 h-4" />
-            </span>
-            <input
-              type="text"
-              placeholder="Search elements by name, symbol, or atomic number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm"
-            />
+    <div className="flex w-full min-w-0 flex-col gap-5">
+      <div className="glass-panel flex w-full flex-col gap-4 rounded-2xl p-4 sm:p-5 no-print">
+        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full sm:max-w-lg">
+            <label htmlFor="element-search" className="sr-only">Search elements by name, symbol, or atomic number</label>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
+            <input id="element-search" type="search" autoComplete="off" placeholder="Search name, symbol, or atomic number…" value={search} onChange={event => setSearch(event.target.value)} className="glass-input min-h-11 w-full rounded-xl py-2.5 pl-10 pr-3 text-sm" />
           </div>
-
-          {/* Quick Stats Summary */}
-          <div className="flex gap-4 text-xs text-slate-600 dark:text-zinc-400 font-medium">
-            <div>
-              Total: <span className="text-slate-800 dark:text-slate-100 font-extrabold">{elementsData.length}</span>
-            </div>
-            <div>
-              Gas: <span className="text-cyan-600 dark:text-cyan-400 font-bold">{elementsData.filter(e => e.phase === "Gas").length}</span>
-            </div>
-            <div>
-              Liquid: <span className="text-amber-600 dark:text-amber-400 font-bold">{elementsData.filter(e => e.phase === "Liquid").length}</span>
-            </div>
-            <div>
-              Solid: <span className="text-emerald-600 dark:text-emerald-400 font-bold">{elementsData.filter(e => e.phase === "Solid").length}</span>
-            </div>
-            <div>
-              Synthetic: <span className="text-purple-600 dark:text-purple-400 font-bold">{elementsData.filter(e => e.phase === "Synthetic").length}</span>
-            </div>
-          </div>
+          <p role="status" aria-live="polite" aria-atomic="true" className="shrink-0 text-sm text-slate-600 dark:text-slate-400">
+            <strong className="text-slate-900 dark:text-white">{filteredElements.length}</strong> of {elementsData.length} elements
+          </p>
         </div>
 
-        {/* Filter Badges Rows */}
-        <div className="flex flex-wrap gap-4 items-center">
-          
-          {/* Categories */}
-          <div className="flex flex-col gap-1.5 w-full">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Categories</span>
-            <div className="flex flex-wrap gap-1.5 max-h-[80px] overflow-y-auto pr-1">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setCategory(category === cat.id ? "" : cat.id)}
-                  className={`text-[11px] px-2.5 py-1 rounded-full border transition-premium cursor-pointer ${
-                    category === cat.id
-                      ? `${cat.color} font-bold scale-105 shadow-sm`
-                      : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap lg:flex-nowrap gap-6 w-full mt-1">
-            {/* Block Filters */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Blocks</span>
-              <div className="flex gap-1.5">
-                {["s", "p", "d", "f"].map((blk) => (
-                  <button
-                    key={blk}
-                    onClick={() => setBlock(block === blk ? "" : blk)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center border font-mono text-sm transition-premium cursor-pointer uppercase ${
-                      block === blk
-                        ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold border-indigo-500/50 scale-105"
-                        : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
-                    }`}
-                  >
-                    {blk}
-                  </button>
+        <details className="group" open>
+          <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+            <SlidersHorizontal aria-hidden="true" className="h-4 w-4" /> Refine your view
+            <span className="ml-auto text-[10px] font-medium normal-case tracking-normal group-open:hidden">Show filters</span>
+          </summary>
+          <div className="mt-3 flex flex-col gap-4">
+            <fieldset>
+              <legend className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Element family</legend>
+              <div className="flex flex-wrap gap-1.5">
+                {categories.map(([id, label]) => (
+                  <button type="button" key={id} aria-pressed={category === id} onClick={() => setCategory(category === id ? "" : id)} className={`${filterClass} ${category === id ? selectedClass : idleClass}`}>{label}</button>
                 ))}
               </div>
+            </fieldset>
+            <div className="flex flex-wrap items-end gap-4 sm:gap-6">
+              <fieldset>
+                <legend className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Electron block</legend>
+                <div className="flex gap-1.5">{["s", "p", "d", "f"].map(value => (
+                  <button type="button" key={value} aria-label={`${value} block`} aria-pressed={block === value} onClick={() => setBlock(block === value ? "" : value)} className={`${filterClass} min-w-10 font-mono ${block === value ? selectedClass : idleClass}`}>{value}</button>
+                ))}</div>
+              </fieldset>
+              <fieldset>
+                <legend className="mb-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Phase near room temperature</legend>
+                <div className="flex flex-wrap gap-1.5">{phases.map(value => (
+                  <button type="button" key={value} aria-pressed={phase === value} onClick={() => setPhase(phase === value ? "" : value)} className={`${filterClass} ${phase === value ? selectedClass : idleClass}`}>{value}</button>
+                ))}</div>
+              </fieldset>
+              <label className="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <input type="checkbox" checked={syntheticOnly} onChange={event => setSyntheticOnly(event.target.checked)} className="h-4 w-4 accent-indigo-600" /> Synthetic elements only
+              </label>
+              {hasFilters && <button type="button" onClick={reset} className="glass-btn flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-700 dark:text-rose-300"><RotateCcw aria-hidden="true" className="h-4 w-4" />Reset filters</button>}
             </div>
+          </div>
+        </details>
+      </div>
 
-            {/* STP State Filters */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">STP Phase</span>
-              <div className="flex gap-1.5">
-                {["Solid", "Liquid", "Gas", "Synthetic"].map((phs) => (
-                  <button
-                    key={phs}
-                    onClick={() => setPhase(phase === phs ? "" : phs)}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition-premium cursor-pointer ${
-                      phase === phs
-                        ? "bg-violet-500/20 text-violet-700 dark:text-violet-300 font-bold border-violet-500/50 scale-105"
-                        : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
-                    }`}
-                  >
-                    {phs}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {filteredElements.length === 0 && (
+        <div className="glass-panel rounded-2xl p-8 text-center">
+          <h3 className="font-bold text-slate-900 dark:text-white">No matching elements</h3>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Try another name or symbol, or clear a filter.</p>
+          <button type="button" onClick={reset} className="glass-btn mt-4 min-h-11 rounded-xl px-5 py-2 text-sm">Clear all filters</button>
+        </div>
+      )}
 
-            {/* Reset Button */}
-            {(category || block || phase || search) && (
-              <button
-                onClick={handleReset}
-                className="flex items-center gap-1.5 self-end ml-auto text-xs text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 glass-btn px-4 py-2 rounded-xl"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Reset Filters
-              </button>
-            )}
+      <div className="hidden min-w-0 md:block">
+        <p className="mb-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"><ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />Scroll horizontally on smaller screens. Select an element to explore its properties.</p>
+        <div className="periodic-table-scroll-wrapper rounded-2xl" tabIndex={0} role="region" aria-label="Periodic table; scroll horizontally to see all groups">
+          <div className="periodic-table-grid glass-panel rounded-2xl p-3 sm:p-4" style={{ minWidth: "1040px" }}>
+            {elementsData.map(element => <ElementCard key={element.number} element={element} onClick={onElementClick} matched={matches.has(element.number)} />)}
+            <div aria-hidden="true" style={{ gridRowStart: 8, gridColumn: "1 / 19" }} className="h-3" />
+            <span className="fblock-label" style={{ gridRowStart: 9, gridColumn: "1 / 4" }}>Lanthanides</span>
+            <span className="fblock-label" style={{ gridRowStart: 10, gridColumn: "1 / 4" }}>Actinides</span>
           </div>
         </div>
       </div>
 
-      {/* Desktop & Tablet: Periodic Table Grid (18 columns) with horizontal scroll */}
-      <div className="hidden md:block w-full">
-        <div className="periodic-table-scroll-wrapper">
-          <div className="periodic-table-grid glass-panel p-4 rounded-3xl" style={{ minWidth: "980px" }}>
-            
-            {/* Render elements 1 to 118 with grid layout */}
-            {elementsData.map((element) => {
-              return (
-                <ElementCard
-                  key={element.number}
-                  element={element}
-                  onClick={onElementClick}
-                  activeFilters={activeFilters}
-                />
-              );
-            })}
-
-
-            {/* Spacer Row 8: separator between main table and f-block */}
-            <div style={{ gridRowStart: 8, gridColumnStart: 1, gridColumnEnd: 19 }} className="h-3" />
-
-
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:hidden" aria-label="Element cards">
+        {filteredElements.map(element => (
+          <button type="button" key={element.number} onClick={() => onElementClick(element)} aria-label={`${element.name}, ${element.symbol}, atomic number ${element.number}`} aria-haspopup="dialog" className="glass-panel flex min-w-0 flex-col gap-2 rounded-2xl border border-slate-200 p-3 text-left transition-colors hover:border-indigo-400 dark:border-white/10 dark:hover:border-indigo-400">
+            <span className="flex w-full items-center justify-between text-xs text-slate-500 dark:text-slate-400"><span>{element.number}</span><span>{element.phase}</span></span>
+            <span className="text-3xl font-extrabold tracking-tight text-indigo-700 dark:text-indigo-300">{element.symbol}</span>
+            <span className="w-full truncate text-sm font-bold text-slate-900 dark:text-white">{element.name}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">{element.massType === "representative isotope mass number" ? `[${element.massNumber}]` : `${element.mass.toFixed(3)} u`}</span>
+          </button>
+        ))}
       </div>
-
-      {/* Mobile Viewport: Scroll-Optimized Vertical List */}
-      <div className="block md:hidden flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-slate-500 dark:text-zinc-400 px-1 uppercase tracking-wider">Elements Index</h3>
-        <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto pr-1">
-          {elementsData
-            .filter((element) => {
-              // Apply active filters on mobile too
-              const { search, category: cat, block: blk, phase: phs } = activeFilters;
-              if (search) {
-                const q = search.toLowerCase();
-                const mName = element.name.toLowerCase().includes(q);
-                const mSym = element.symbol.toLowerCase().includes(q);
-                const mNum = element.number.toString() === q;
-                if (!mName && !mSym && !mNum) return false;
-              }
-              if (cat && element.category !== cat) return false;
-              if (blk && element.block !== blk) return false;
-              if (phs && element.phase !== phs) return false;
-              return true;
-            })
-            .map((element) => (
-              <div
-                key={element.number}
-                onClick={() => onElementClick(element)}
-                className="glass-panel p-3 rounded-xl flex items-center justify-between cursor-pointer border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-white/5 transition-premium"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white">
-                    {element.symbol}
-                  </div>
-                  <div className="flex flex-col text-left">
-                    <span className="text-sm font-bold text-slate-800 dark:text-white">{element.name}</span>
-                    <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">
-                      Atomic No: {element.number} • Block: <span className="uppercase">{element.block}</span>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-1">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full border leading-none font-semibold ${
-                    element.phase === "Gas" ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20" :
-                    element.phase === "Liquid" ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" :
-                    element.phase === "Solid" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" :
-                    "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
-                  }`}>
-                    {element.phase}
-                  </span>
-                  <span className="text-xs text-slate-500 dark:text-zinc-400 font-semibold">{element.mass.toFixed(3)}</span>
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
+      <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">Bracketed masses identify a representative isotope for elements without a standard atomic weight. Unknown phase means it has not been established; synthetic origin is not a physical phase.</p>
     </div>
   );
 }

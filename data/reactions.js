@@ -180,7 +180,7 @@ export const reactionsData = [
     reactants: ["Fe", "O2"],
     products: ["Fe2O3"],
     coeffs: { reactants: [4, 3], products: [2] },
-    explanation: "Iron rusting synthesis. Find common multiple (6) for oxygen: 3 molecules O2 react with 4 Fe atoms to form 2 Fe2O3."
+    explanation: "Simplified formation of iron(III) oxide. Balance oxygen to 6 atoms: 4Fe + 3O2 = 2Fe2O3. Real rust contains hydrated oxides and is more complex."
   },
   {
     id: "hard-s2",

@@ -1,171 +1,111 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { MotionConfig } from "framer-motion";
+import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
 import ElementDrawer from "../components/ElementDrawer";
-import ChemistryWorkspace from "../components/ChemistryWorkspace";
-import WorksheetGenerator from "../components/WorksheetGenerator";
-import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon } from "lucide-react";
+
+const loading = () => <p role="status" className="glass-panel rounded-2xl p-8">Loading your workspace…</p>;
+const ChemistryWorkspace = dynamic(() => import("../components/ChemistryWorkspace"), { loading });
+const WorksheetGenerator = dynamic(() => import("../components/WorksheetGenerator"), { loading });
+const tabs = [
+  { id: "table", label: "Periodic Table", icon: Table, title: "Interactive Periodic Table", description: "Explore the building blocks of matter. Search an element or select a tile to discover its properties." },
+  { id: "suite", label: "Chemistry Suite", icon: Beaker, title: "Chemistry Tools Workspace", description: "Balance reactions, calculate molar mass, explore solubility, and build an atomic model." },
+  { id: "worksheet", label: "Worksheet Generator", icon: FileSpreadsheet, title: "Practice Worksheet Generator", description: "Turn chemistry concepts into practice. Create a worksheet, check your answers, or print a clean copy." },
+];
+let memoryTheme;
+function readTheme() {
+  let saved = memoryTheme;
+  try { if (saved === undefined) saved = localStorage.getItem("theme"); } catch { /* Storage may be disabled. */ }
+  return saved === "dark" || saved === "light" ? saved : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function subscribeTheme(callback) {
+  const media = matchMedia("(prefers-color-scheme: dark)");
+  const syncStorage = () => { memoryTheme = undefined; callback(); };
+  window.addEventListener("storage", syncStorage);
+  window.addEventListener("rasayan-theme", callback);
+  media.addEventListener("change", callback);
+  return () => {
+    window.removeEventListener("storage", syncStorage);
+    window.removeEventListener("rasayan-theme", callback);
+    media.removeEventListener("change", callback);
+  };
+}
+const serverTheme = () => "light";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("table"); // table, suite, worksheet
+  const [activeTab, setActiveTab] = useState("table");
+  const [visited, setVisited] = useState(["table"]);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [theme, setTheme] = useState("dark");
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") || "dark";
-    setTheme(savedTheme);
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
+  const closeDrawer = useCallback(() => setSelectedElement(null), []);
+  useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
+  const selectTab = (id) => {
+    setActiveTab(id);
+    setVisited(previous => previous.includes(id) ? previous : [...previous, id]);
+  };
+  const handleTabKeys = (event, index) => {
+    let next;
+    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+    if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+    if (event.key === "Home") next = 0;
+    if (event.key === "End") next = tabs.length - 1;
+    if (next === undefined) return;
+    event.preventDefault();
+    selectTab(tabs[next].id);
+    document.getElementById(`tab-${tabs[next].id}`)?.focus();
+  };
   const toggleTheme = () => {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-    if (nextTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    memoryTheme = theme === "dark" ? "light" : "dark";
+    try { localStorage.setItem("theme", memoryTheme); } catch { /* Keep the in-memory preference. */ }
+    window.dispatchEvent(new Event("rasayan-theme"));
   };
-
-  const handleElementClick = (element) => {
-    setSelectedElement(element);
-  };
-
-  const handleCloseDrawer = () => {
-    setSelectedElement(null);
-  };
-
   return (
-    <div className="flex flex-col flex-1 min-h-screen relative pb-16">
-      
-      {/* Animated Mesh Gradient Background */}
-      <div className="mesh-gradient-bg" />
-
-      {/* Main App Navbar Header */}
-      <header className="w-full max-w-7xl mx-auto px-4 py-6 no-print select-none">
-        <div className="glass-panel w-full px-6 py-4 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
-          
-          {/* Logo Branding */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center">
-              <Atom className="w-5.5 h-5.5 text-indigo-400 animate-pulse" />
-            </div>
-            <div className="flex flex-col text-left">
-              <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 leading-none tracking-tight">Rasayan Lab</h1>
-              <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold uppercase mt-1 tracking-wider">
-                Universal Rasayan Studio
-              </span>
-            </div>
-          </div>
-
-          {/* Nav Links + Glassmorphic Mode Toggle */}
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Navigation Tabs */}
-            <nav className="flex gap-1 bg-slate-200/60 dark:bg-black/35 p-1 rounded-xl border border-slate-200/80 dark:border-white/5">
-              {[
-                { id: "table", label: "Periodic Table", icon: Table },
-                { id: "suite", label: "Chemistry Suite", icon: Beaker },
-                { id: "worksheet", label: "Worksheet Generator", icon: FileSpreadsheet }
-              ].map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-lg transition-premium cursor-pointer ${
-                      activeTab === tab.id
-                        ? "bg-white/40 dark:bg-white/10 text-zinc-900 dark:text-white shadow border border-black/10 dark:border-white/10 scale-105"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5"
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-
-            {/* Glassmorphic Mode Toggle */}
-            <button
-              onClick={toggleTheme}
-              className={`p-2.5 rounded-xl border backdrop-blur-md transition-premium flex items-center justify-center cursor-pointer ${
-                theme === "light"
-                  ? "bg-white/30 border-white/40 shadow-sm text-slate-800"
-                  : "bg-slate-900/30 border-slate-800/40 shadow-lg text-yellow-400"
-              }`}
-              title="Toggle Dark/Light Mode"
-            >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4" />
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-
+    <MotionConfig reducedMotion="user">
+      <div className="app-shell">
+        <a className="skip-link" href="#main-content">Skip to content</a>
+        <div className="mesh-gradient-bg" aria-hidden="true" />
+        <header className="site-header no-print">
+          <a href="#main-content" className="brand" aria-label="Rasayan Lab, main content">
+            <span className="brand-mark"><Atom aria-hidden="true" size={24} /></span>
+            <span><span className="brand-title">Rasayan Lab</span><span className="brand-caption">A little curiosity. A world of chemistry.</span></span>
+          </a>
+          <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} title="Toggle Dark/Light Mode">
+            {theme === "dark" ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
+          </button>
+        </header>
+        <div className="intro no-print">
+          <p className="eyebrow"><span /> YOUR DIGITAL CHEMISTRY LAB</p>
+          <h1>Small atoms.<br className="sm:hidden" /> <span>Big discoveries.</span></h1>
+          <p className="intro-description">Explore, experiment, and understand — one element at a time.</p>
+          <div className="intro-facts"><span>118 elements</span><span>Interactive tools</span><span>Print-ready practice</span></div>
         </div>
-      </header>
-
-      {/* Main App Content Viewport */}
-      <main className="w-full max-w-7xl mx-auto px-4 flex-1 flex flex-col">
-        
-        {/* Render Periodic Table Grid View */}
-        {activeTab === "table" && (
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="text-center md:text-left self-start mb-6 no-print relative z-10">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 leading-none">Interactive Periodic Table</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                Click any element tile to explore subatomic, thermodynamic, historical, and STSE properties.
-              </p>
-            </div>
-            <PeriodicTable onElementClick={handleElementClick} />
+        <nav aria-label="Lab sections" className="lab-navigation no-print">
+          <div role="tablist" aria-label="Chemistry workspaces" className="lab-tabs">
+            {tabs.map(({ id, label, icon: Icon }, index) => (
+              <button key={id} id={`tab-${id}`} type="button" role="tab" aria-selected={activeTab === id} aria-controls={`panel-${id}`} tabIndex={activeTab === id ? 0 : -1} onClick={() => selectTab(id)} onKeyDown={event => handleTabKeys(event, index)}>
+                <Icon size={18} aria-hidden="true" /><span>{label}</span>
+              </button>
+            ))}
           </div>
-        )}
-
-        {/* Render Chemistry Suite Utilities */}
-        {activeTab === "suite" && (
-          <div className="flex-1 flex flex-col">
-            <div className="text-left mb-6 relative z-10">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 leading-none">Chemistry Tools Workspace</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                Evaluate stoichiometry, balance reactions, study solubility curves, and model atomic particles.
-              </p>
-            </div>
-            <ChemistryWorkspace />
-          </div>
-        )}
-
-        {/* Render Worksheet Creator */}
-        {activeTab === "worksheet" && (
-          <div className="flex-1 flex flex-col">
-            <div className="text-left mb-6 no-print relative z-10">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-slate-100 leading-none">Practice Worksheet Generator</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                Generate tailored exams for students, print test sheets, and toggle the master answer keys.
-              </p>
-            </div>
-            <WorksheetGenerator />
-          </div>
-        )}
-
-      </main>
-
-      {/* Global Minimalist Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-4 mt-auto pt-12 no-print select-none">
-        <div className="border-t border-slate-200 dark:border-white/10 py-6 text-center text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide bg-transparent backdrop-blur-sm rounded-t-2xl">
-          © 2026 Rasayan Lab. Designed & Developed by ayvalor. All Rights Reserved.
-        </div>
-      </footer>
-
-      {/* Floating Detailed Sidebar Element Drawer */}
-      <ElementDrawer element={selectedElement} onClose={handleCloseDrawer} />
-      
-    </div>
+        </nav>
+        <main id="main-content" tabIndex={-1} className="lab-main">
+          {tabs.map(tab => (
+            <section key={tab.id} id={`panel-${tab.id}`} role="tabpanel" aria-labelledby={`tab-${tab.id}`} hidden={activeTab !== tab.id} tabIndex={0}>
+              <div className="section-heading no-print"><h2>{tab.title}</h2><p>{tab.description}</p></div>
+              {visited.includes(tab.id) && (tab.id === "table" ? <PeriodicTable onElementClick={setSelectedElement} /> : tab.id === "suite" ? <ChemistryWorkspace /> : <WorksheetGenerator />)}
+            </section>
+          ))}
+        </main>
+        <footer className="site-footer no-print">
+          <p>Rasayan Lab <span>·</span> Made for curious minds by ayvalor.</p>
+          <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
+          <p className="footer-note">Educational models and reference data. Check element notes for isotope values and unmeasured properties.</p>
+        </footer>
+        <ElementDrawer element={selectedElement} onClose={closeDrawer} />
+      </div>
+    </MotionConfig>
   );
 }

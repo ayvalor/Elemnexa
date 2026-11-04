@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, HelpCircle, AlertTriangle, Lightbulb, User, Globe, Calendar, Zap, Layers } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { X, HelpCircle, AlertTriangle, Lightbulb, Globe, Zap, Layers } from "lucide-react";
 import { categoryNames } from "../data/elements";
 
 const getCategoryColor = (category) => {
@@ -22,27 +22,80 @@ const getCategoryColor = (category) => {
 };
 
 // Safe display helper: show value or fallback
-const safeDisplay = (value, fallback = "N/A") => {
+const safeDisplay = (value, fallback = "Not compiled") => {
   if (value === undefined || value === null || value === "") return fallback;
   return value;
 };
 
 export default function ElementDrawer({ element, onClose }) {
+  return <AnimatePresence>{element && <DrawerContent key={element.number} element={element} onClose={onClose} />}</AnimatePresence>;
+}
+
+function DrawerContent({ element, onClose }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [showMnemonic, setShowMnemonic] = useState(false);
 
-  if (!element) return null;
+  const overlayRef = useRef(null);
+  const panelRef = useRef(null);
+  const closeRef = useRef(null);
+  const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const previousPadding = document.body.style.paddingRight;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+    // Mark background siblings inert while keeping the whole drawer interactive.
+    const siblings = [];
+    let current = overlayRef.current;
+    while (current && current !== document.body) {
+      for (const sibling of current.parentElement?.children || []) {
+        if (sibling !== current && sibling instanceof HTMLElement && !["SCRIPT", "STYLE"].includes(sibling.tagName)) {
+          siblings.push([sibling, sibling.inert]);
+          sibling.inert = true;
+        }
+      }
+      current = current.parentElement;
+    }
+    closeRef.current?.focus({ preventScroll: true });
+    const focusable = () => [...panelRef.current.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex="0"]')]
+      .filter(node => node.getClientRects().length > 0);
+    const handleKey = event => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key === "Tab") {
+        const nodes = focusable();
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        if (!nodes.length) { event.preventDefault(); panelRef.current.focus(); }
+        else if (event.shiftKey && (document.activeElement === first || !panelRef.current.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !panelRef.current.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+      }
+    };
+    const containFocus = event => {
+      if (!panelRef.current.contains(event.target)) closeRef.current?.focus({ preventScroll: true });
+    };
+    document.addEventListener("keydown", handleKey);
+    document.addEventListener("focusin", containFocus);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener("focusin", containFocus);
+      for (const [sibling, wasInert] of siblings) sibling.inert = wasInert;
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPadding;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+    };
+  }, [onClose]);
 
   const bgGradient = getCategoryColor(element.category);
 
   // Split shell configuration for shell visualizer
   const shells = element.shellConfig && element.shellConfig !== "N/A"
-    ? element.shellConfig.split(",").map(s => parseInt(s.trim()))
+    ? element.shellConfig.split(",").map(s => Number(s.trim())).filter(Number.isFinite)
     : [];
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex justify-end no-print select-none">
+      <motion.div ref={overlayRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18 }} className="fixed inset-0 z-50 flex justify-end no-print">
         
         {/* Backdrop overlay */}
         <motion.div
@@ -50,35 +103,44 @@ export default function ElementDrawer({ element, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          aria-hidden="true"
+          className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
         />
 
         {/* Drawer panel */}
         <motion.div
-          initial={{ x: "100%" }}
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`element-title-${element.number}`}
+          tabIndex={-1}
+          initial={{ x: reducedMotion ? 0 : "100%" }}
           animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.7 }}
-          className="relative w-full max-w-lg md:max-w-xl h-full flex flex-col glass-panel shadow-2xl border-l border-white/10 z-10"
+          exit={{ x: reducedMotion ? 0 : "100%" }}
+          transition={{ ease: [0.16, 1, 0.3, 1], duration: reducedMotion ? 0 : 0.28 }}
+          className="relative z-10 flex h-dvh w-full max-w-lg flex-col border-l border-slate-200 bg-slate-50 shadow-2xl dark:border-white/10 dark:bg-slate-950 md:max-w-xl"
         >
           {/* Header Banner - Category gradient */}
-          <div className={`p-6 bg-gradient-to-r ${bgGradient} border-b relative flex items-center justify-between`}>
-            <div>
+          <div className={`p-4 sm:p-6 bg-gradient-to-r ${bgGradient} shrink-0 border-b relative flex items-center justify-between gap-2`}>
+            <div className="min-w-0 pr-8">
               <span className="text-[10px] uppercase font-extrabold tracking-wider bg-black/40 px-2.5 py-1 rounded-full text-white/90">
                 Atomic Number {element.number} • {element.block.toUpperCase()}-Block
               </span>
-              <h2 className="text-3xl font-extrabold text-white mt-2 leading-none">{element.name}</h2>
-              <p className="text-xs text-white/80 mt-1.5 font-medium">{categoryNames[element.category]}</p>
+              <h2 id={`element-title-${element.number}`} className="text-2xl sm:text-3xl break-words font-extrabold text-slate-950 dark:text-white mt-2 leading-tight">{element.name}</h2>
+              <p className="text-xs text-slate-700 dark:text-white/80 mt-1.5 font-medium">{categoryNames[element.category]}</p>
             </div>
             
             <div className="flex items-center gap-4">
               {/* Massive floating symbol */}
-              <span className="text-6xl font-black opacity-30 select-none pointer-events-none pr-8">
+              <span className="hidden sm:block text-5xl font-black opacity-30 select-none pointer-events-none pr-8">
                 {element.symbol}
               </span>
               <button
+                ref={closeRef}
+                type="button"
+                aria-label={`Close ${element.name} details`}
                 onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/20 hover:bg-black/40 text-white transition-all"
+                className="absolute top-4 right-4 p-2 rounded-full bg-slate-900/10 hover:bg-slate-900/20 text-slate-900 dark:bg-black/20 dark:hover:bg-black/40 dark:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -86,7 +148,14 @@ export default function ElementDrawer({ element, onClose }) {
           </div>
 
           {/* Drawer Tabs Navigation */}
-          <div className="flex border-b border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-black/20 p-2 gap-1 overflow-x-auto">
+          <div role="tablist" aria-label="Element details" onKeyDown={event => {
+            if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+            event.preventDefault();
+            const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
+            const index = tabs.indexOf(document.activeElement);
+            const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+            tabs[next].focus(); tabs[next].click();
+          }} className="flex shrink-0 border-b border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-black/20 p-2 gap-1 overflow-x-auto">
             {[
               { id: "overview", label: "Overview" },
               { id: "structure", label: "Structure" },
@@ -94,7 +163,13 @@ export default function ElementDrawer({ element, onClose }) {
               { id: "society", label: "Context & Mnemonic" },
             ].map((tab) => (
               <button
+                type="button"
                 key={tab.id}
+                role="tab"
+                id={`element-${element.number}-tab-${tab.id}`}
+                aria-selected={activeTab === tab.id}
+                aria-controls={`element-${element.number}-panel`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
                 onClick={() => setActiveTab(tab.id)}
                 className={`text-xs px-3.5 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${
                   activeTab === tab.id
@@ -108,7 +183,7 @@ export default function ElementDrawer({ element, onClose }) {
           </div>
 
           {/* Tab Content Area */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+          <div role="tabpanel" id={`element-${element.number}-panel`} aria-labelledby={`element-${element.number}-tab-${activeTab}`} tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 flex flex-col gap-6 break-words">
             
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
@@ -121,16 +196,16 @@ export default function ElementDrawer({ element, onClose }) {
                     <span className="text-xl font-black text-zinc-800 dark:text-white">{element.symbol}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Atomic Mass</span>
-                    <span className="text-xl font-bold text-zinc-800 dark:text-white">{element.mass} u</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">{element.massType === "representative isotope mass number" ? "Isotope mass number" : "Standard atomic weight"}</span>
+                    <span className="text-xl font-bold text-zinc-800 dark:text-white">{element.massType === "representative isotope mass number" ? `[${element.massNumber}]` : `${element.mass} u`}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">STP Phase</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Phase near room temperature</span>
                     <span className={`text-lg font-bold ${
-                      element.phase === "Gas" ? "text-cyan-400" :
-                      element.phase === "Liquid" ? "text-amber-400" :
-                      element.phase === "Solid" ? "text-emerald-400" :
-                      "text-purple-400"
+                      element.phase === "Gas" ? "text-cyan-700 dark:text-cyan-300" :
+                      element.phase === "Liquid" ? "text-amber-700 dark:text-amber-300" :
+                      element.phase === "Solid" ? "text-emerald-700 dark:text-emerald-300" :
+                      "text-purple-700 dark:text-purple-300"
                     }`}>{element.phase}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
@@ -139,10 +214,13 @@ export default function ElementDrawer({ element, onClose }) {
                   </div>
                 </div>
 
+                {element.phaseNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.phaseNote}</p>}
+                {element.valenceNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.valenceNote}</p>}
+                {element.configurationPredicted && <p className="rounded-lg bg-amber-500/10 p-3 text-xs leading-relaxed text-amber-800 dark:text-amber-200">Electron configuration and shell populations are theoretical predictions for this element.</p>}
                 {/* Shell breakdown card */}
                 {shells.length > 0 && (
                   <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-wrap gap-2 justify-between items-center">
                       <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <Layers className="w-3.5 h-3.5" /> Electron Shell Configuration
                       </span>
@@ -151,7 +229,7 @@ export default function ElementDrawer({ element, onClose }) {
                       </span>
                     </div>
                     {/* Concentric visual shell rings mock */}
-                    <div className="flex gap-2 items-center justify-center p-2 bg-slate-100/70 dark:bg-black/10 rounded-lg">
+                    <div className="flex flex-wrap gap-2 items-center justify-center p-2 bg-slate-100/70 dark:bg-black/10 rounded-lg">
                       {shells.map((val, idx) => (
                         <div key={idx} className="flex flex-col items-center p-2 border border-slate-200 dark:border-white/5 bg-white/60 dark:bg-white/5 rounded-lg w-12">
                           <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold">Shell {idx+1}</span>
@@ -183,7 +261,7 @@ export default function ElementDrawer({ element, onClose }) {
                 {/* Subatomic Particle breakdown */}
                 <div className="glass-panel-light p-4 rounded-xl">
                   <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Subatomic counts</span>
-                  <div className="grid grid-cols-3 gap-3 mt-3">
+                  <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-2 mt-3">
                     <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl text-center">
                       <div className="text-xs text-rose-600 dark:text-rose-300 font-bold">Protons (p+)</div>
                       <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{safeDisplay(element.protons)}</div>
@@ -199,6 +277,8 @@ export default function ElementDrawer({ element, onClose }) {
                   </div>
                 </div>
 
+                <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">Electron counts describe a neutral atom. {element.isotopeNote || `Neutron counts apply to the representative isotope ${element.symbol}-${element.massNumber ?? element.protons + element.neutrons}; other isotopes have different neutron counts.`} Standard atomic weights are isotope-weighted averages, not mass numbers.</p>
+                {element.configurationPredicted && <p className="text-xs text-amber-800 dark:text-amber-200">This electron configuration is a theoretical prediction.</p>}
                 {/* Configurations parameters */}
                 <div className="flex flex-col gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
@@ -208,7 +288,7 @@ export default function ElementDrawer({ element, onClose }) {
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Atomic Radius</span>
                     <span className="text-base font-bold text-zinc-800 dark:text-white mt-1">
-                      {element.radius != null ? `${element.radius} pm` : "N/A"}
+                      {typeof element.radius === "number" ? `${element.radius} pm` : safeDisplay(element.radius)}
                     </span>
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
@@ -253,7 +333,7 @@ export default function ElementDrawer({ element, onClose }) {
                     <Zap className="w-3.5 h-3.5" /> Electrodynamic & Energy Properties
                   </span>
                   
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
                     <div className="bg-black/5 dark:bg-white/5 p-2.5 rounded-lg text-center">
                       <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Electronegativity</span>
                       <span className="text-sm font-bold text-zinc-800 dark:text-white block mt-1">{safeDisplay(element.electronegativity)}</span>
@@ -267,6 +347,7 @@ export default function ElementDrawer({ element, onClose }) {
                       <span className="text-sm font-bold text-zinc-800 dark:text-white block mt-1">{safeDisplay(element.electronAffinity)}</span>
                     </div>
                   </div>
+                  {element.electronAffinityNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.electronAffinityNote}</p>}
                   <div className="flex flex-col text-left border-t border-black/5 dark:border-white/5 pt-3">
                     <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Common Oxidation States</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-0.5">{safeDisplay(element.oxidationStates)}</span>
@@ -318,7 +399,7 @@ export default function ElementDrawer({ element, onClose }) {
                     <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
                       <HelpCircle className="w-3.5 h-3.5 text-cyan-400" /> Science, Technology, Society & Environment (STSE)
                     </div>
-                    <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-1 leading-relaxed italic">"{element.stseContext}"</p>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-1 leading-relaxed italic">{element.stseContext}</p>
                   </div>
                 )}
 
@@ -334,17 +415,20 @@ export default function ElementDrawer({ element, onClose }) {
 
                 {/* MEMORY MNEMONIC TOGGLE */}
                 <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-3">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap gap-2 justify-between items-center">
                     <div className="flex flex-col text-left">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">Student Memory Mnemonic</span>
                       <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Helpful rhyme to memorize chemistry groups</span>
                     </div>
                     <button
+                      type="button"
+                      aria-expanded={showMnemonic}
+                      aria-controls={`mnemonic-${element.number}`}
                       onClick={() => setShowMnemonic(!showMnemonic)}
                       className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all ${
                         showMnemonic 
-                          ? "bg-amber-500/20 border-amber-500/30 text-amber-300 scale-105"
-                          : "bg-white/5 border-white/10 text-zinc-500 dark:text-zinc-400 hover:text-white"
+                          ? "bg-amber-500/20 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                          : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-zinc-300"
                       }`}
                     >
                       {showMnemonic ? "Hide" : "Show"}
@@ -353,7 +437,8 @@ export default function ElementDrawer({ element, onClose }) {
 
                   {showMnemonic && (
                     <motion.div
-                      initial={{ opacity: 0, y: -5 }}
+                      id={`mnemonic-${element.number}`}
+                      initial={reducedMotion ? false : { opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg text-center"
                     >
@@ -371,11 +456,11 @@ export default function ElementDrawer({ element, onClose }) {
           </div>
           
           {/* Footer branding */}
-          <div className="p-4 bg-slate-100/80 dark:bg-black/40 border-t border-slate-200 dark:border-white/5 text-center text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-            Rasayan Lab Universal Studio v1.0.0
+          <div className="shrink-0 p-4 bg-slate-100/80 dark:bg-black/40 border-t border-slate-200 dark:border-white/5 text-center text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
+            <span className="block">{element.dataCompleteness || "Educational reference · Values depend on isotope and conditions."}</span>
+            {Array.isArray(element.sourceUrls) && <span className="mt-1 flex flex-wrap justify-center gap-3">{element.sourceUrls.filter(url => typeof url === "string" && url.startsWith("https://")).map((url, index) => <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-indigo-600 dark:hover:text-indigo-300">Reference {index + 1}<span className="sr-only"> (opens in a new tab)</span></a>)}</span>}
           </div>
         </motion.div>
-      </div>
-    </AnimatePresence>
+      </motion.div>
   );
 }
