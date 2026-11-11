@@ -10,18 +10,18 @@
 .periodic-explorer [data-category="lanthanide"] { --card-category-color: var(--group-lanthanide); }
 .periodic-explorer [data-category="actinide"] { --card-category-color: var(--group-actinide); }
 .periodic-explorer [data-category="unknown"] { --card-category-color: var(--group-unknown); }
-.periodic-explorer .element-family-filter { display: inline-flex; align-items: center; gap: .45rem; }
+.periodic-explorer .element-family-filter { min-height: 36px; border-radius: 8px; font-size: .65rem; display: inline-flex; align-items: center; gap: .45rem; }
 .periodic-explorer .family-color-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--card-category-color); flex: none; }
-.periodic-explorer .periodic-layout { min-width: 1160px; padding: 12px; gap: 5px; border-radius: 20px; background: #fff7; border: 1px solid #94a3b828; }
-.dark .periodic-explorer .periodic-layout { background: #0f172a70; border-color: #94a3b821; }
-.periodic-explorer .periodic-group-number { display: block; text-align: center; padding: .2rem 0 .4rem; font-size: .65rem; font-weight: 600; color: #64748b; font-variant-numeric: tabular-nums; }
+.periodic-explorer .periodic-layout { min-width: 1130px; padding: 8px; gap: 5px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.dark .periodic-explorer .periodic-layout { background: var(--surface); border-color: var(--line); }
+.periodic-explorer .periodic-group-number { display: block; text-align: center; padding: .2rem 0 .4rem; font-size: .65rem; font-weight: 600; color: #526575; font-variant-numeric: tabular-nums; }
 .dark .periodic-explorer .periodic-group-number { color: #94a3b8; }
 .periodic-explorer .element-card.element-tile {
-  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 0; height: 101px; padding: 7px 5px 8px;
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-width: 0; height: 94px; padding: 7px 5px 8px;
   border: 1px solid color-mix(in srgb, var(--card-category-color) 18%, #e2e8f0);
-  border-top: 2px solid color-mix(in srgb, var(--card-category-color) 80%, transparent);
+  border-top: 1px solid color-mix(in srgb, var(--card-category-color) 25%, transparent);
   border-radius: 10px;
-  background: linear-gradient(155deg, color-mix(in srgb, var(--card-category-color) 10%, white), #fff 78%);
+  background: color-mix(in srgb, var(--card-category-color) 13%, white);
   color: #0f172a;
   box-shadow: 0 2px 3px #0f172a04;
   overflow: visible; cursor: pointer; text-align: center;
@@ -29,14 +29,14 @@
   backdrop-filter: none; -webkit-backdrop-filter: none;
 }
 .periodic-explorer .element-tile-meta { display: flex; justify-content: space-between; width: 100%; align-items: center; gap: 2px; font-size: 8.5px; line-height: 1.3; font-variant-numeric: tabular-nums; }
-.periodic-explorer .element-card .element-number { font-weight: 750; color: var(--card-category-color); }
-.periodic-explorer .element-card .element-mass { color: #5e6a7d; font-weight: 500; white-space: nowrap; }
+.periodic-explorer .element-card .element-number { font-weight: 750; color: color-mix(in srgb, var(--card-category-color) 80%, #172e32); }
+.periodic-explorer .element-card .element-mass { color: #465369; font-weight: 500; white-space: nowrap; }
 .periodic-explorer .element-card .element-symbol { font-family: var(--font-display, "Geist Variable", var(--font-sans)); font-size: 28px; line-height: 1; letter-spacing: -.04em; font-weight: 750; color: #152238; padding-top: 4px; }
 .periodic-explorer .element-card .element-name { display: grid; align-items: center; min-height: 22px; max-width: 100%; font-size: 9px; line-height: 1.2; letter-spacing: -.01em; font-weight: 550; overflow-wrap: anywhere; color: #475569; }
 .dark .periodic-explorer .element-card.element-tile {
-  background: linear-gradient(155deg, color-mix(in srgb, var(--card-category-color) 12%, #111b2d), #111b2d 78%);
+  background: color-mix(in srgb, var(--card-category-color) 13%, #121f25);
   border-color: color-mix(in srgb, var(--card-category-color) 20%, #1e293b);
-  border-top-color: color-mix(in srgb, var(--card-category-color) 75%, transparent);
+  border-top-color: color-mix(in srgb, var(--card-category-color) 25%, transparent);
   box-shadow: 0 2px 4px #00000012;
 }
 .dark .periodic-explorer .element-card .element-symbol { color: #f1f5f9; }
@@ -44,28 +44,28 @@
 .dark .periodic-explorer .element-card .element-mass { color: #a5b4c9; }
 .periodic-explorer .element-card.element-tile:disabled { opacity: .2; cursor: default; box-shadow: none; }
 .periodic-explorer .element-card.element-tile:focus-visible, .periodic-explorer .element-preview:focus-visible { outline: 3px solid var(--card-category-color); outline-offset: 3px; z-index: 2; }
-.periodic-explorer .element-preview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.periodic-explorer .element-preview-grid { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .periodic-explorer .element-preview {
   display: flex; flex-direction: column; position: relative; min-width: 0; padding: 14px; border-radius: 18px; text-align: left;
   border: 1px solid color-mix(in srgb, var(--card-category-color) 23%, #e2e8f0);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 9%, white), #fff 75%);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 15%, white), color-mix(in srgb, var(--card-category-color) 5%, white));
   box-shadow: 0 3px 10px #0f172a05;
   transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 .periodic-explorer .element-preview-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .periodic-explorer .element-preview-number { display: grid; place-items: center; min-width: 26px; min-height: 24px; padding-inline: 4px; border-radius: 7px; background: color-mix(in srgb, var(--card-category-color) 9%, transparent); font-size: .68rem; font-weight: 700; color: var(--card-category-color); }
-.periodic-explorer .element-preview-phase { font-size: .61rem; font-weight: 550; color: #64748b; }
+.periodic-explorer .element-preview-phase { font-size: .61rem; font-weight: 550; color: #526575; }
 .periodic-explorer .element-preview-identity { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-block: 15px 9px; }
 .periodic-explorer .element-preview-identity svg { color: var(--card-category-color); opacity: .55; }
 .periodic-explorer .element-preview-symbol { font-family: var(--font-display, "Geist Variable", var(--font-sans)); font-size: clamp(2rem, 7vw, 2.65rem); line-height: 1; font-weight: 750; letter-spacing: -.05em; color: var(--card-category-color); }
 .periodic-explorer .element-preview-name { font-size: .86rem; line-height: 1.3; font-weight: 650; letter-spacing: -.025em; overflow-wrap: anywhere; color: #152238; }
-.periodic-explorer .element-preview-family { margin-top: 4px; font-size: .61rem; line-height: 1.45; min-height: 1.45em; color: #64748b; }
-.periodic-explorer .element-preview-bottom { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--card-category-color) 14%, transparent); font-size: .61rem; color: #64748b; font-variant-numeric: tabular-nums; }
+.periodic-explorer .element-preview-family { margin-top: 4px; font-size: .61rem; line-height: 1.45; min-height: 1.45em; color: #526575; }
+.periodic-explorer .element-preview-bottom { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--card-category-color) 14%, transparent); font-size: .61rem; color: #526575; font-variant-numeric: tabular-nums; }
 .dark .periodic-explorer .element-preview { background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 11%, #111b2d), #111b2d 75%); border-color: color-mix(in srgb, var(--card-category-color) 22%, #1e293b); }
 .dark .periodic-explorer .element-preview-name { color: #f1f5f9; }
 .dark .periodic-explorer .element-preview-phase, .dark .periodic-explorer .element-preview-family, .dark .periodic-explorer .element-preview-bottom { color: #a5b4c9; }
 @media (max-width: 767px) { .periodic-explorer .element-preview-grid { display: grid; } }
-@media (min-width: 640px) { .periodic-explorer .element-preview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 640px) { .periodic-explorer .element-preview-grid { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .periodic-explorer .element-card.element-tile:enabled:hover, .periodic-explorer .element-preview:hover { transform: translateY(-3px); border-color: var(--card-category-color); box-shadow: 0 7px 18px color-mix(in srgb, var(--card-category-color) 14%, transparent); z-index: 2; }
 }
@@ -81,3 +81,28 @@
 @media print {
   .periodic-explorer .element-card.element-tile, .periodic-explorer .element-preview { box-shadow: none; background: #fff; break-inside: avoid; }
 }
+.explorer-actions { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.view-switch { display: flex; border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
+.view-switch button { display: grid; place-items: center; min-width: 38px; min-height: 38px; border-radius: 6px; color: var(--muted); }
+.view-switch button:hover, .view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.search-clear { position: absolute; right: 2px; top: 0; display: grid; place-items: center; width: 44px; height: 44px; color: var(--muted); }
+.search-shortcut { position: absolute; right: 12px; top: 10px; border: 1px solid var(--line); padding: 1px 7px; border-radius: 4px; color: var(--muted); font-size: .75rem; }
+.table-insight { display: flex; gap: 1.4rem; align-items: center; padding: 1rem 3rem; }
+.insight-symbol { font: 700 4.2rem var(--font-display); color: var(--accent); letter-spacing: -.08em; opacity: .8; }
+.table-insight strong { font: 650 1.1rem var(--font-display); letter-spacing: -.03em; }
+.table-insight p { max-width: 23rem; font-size: .7rem; color: var(--muted); line-height: 1.7; margin-top: .4rem; }
+.table-insight div > span { display: block; font-size: .48rem; letter-spacing: .08em; color: var(--accent); margin-top: .7rem; }
+.periodic-explorer[data-view="cards"] .table-view { display: none; }
+.periodic-explorer[data-view="cards"] .element-preview-grid { display: grid; }
+.periodic-explorer[data-view="table"] .table-view { display: block; }
+.periodic-explorer[data-view="table"] .element-preview-grid { display: none; }
+@media (max-width: 767px) { .periodic-explorer[data-view="auto"] .table-view { display: none; } .periodic-explorer[data-view="auto"] .view-switch button:last-child { color: var(--accent); background: var(--accent-soft); } }
+@media (min-width: 768px) { .periodic-explorer[data-view="auto"] .view-switch button:first-child { color: var(--accent); background: var(--accent-soft); } .periodic-explorer[data-view="cards"] .element-preview-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .periodic-explorer[data-view="cards"] .element-preview-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+
+.dark .periodic-explorer .element-card .element-number { color: var(--card-category-color); }
+.periodic-explorer .element-preview-number { color: color-mix(in srgb, var(--card-category-color) 80%, #172e32); }
+.dark .periodic-explorer .element-preview-number { color: var(--card-category-color); }
+/* Offscreen mobile cards retain their accessible content without paying layout
+   and paint costs for the entire collection on the first frame. */
+@media screen { .periodic-explorer .element-preview { content-visibility: auto; contain-intrinsic-size: auto 185px; } }

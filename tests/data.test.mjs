@@ -138,3 +138,14 @@ test('new heavy-element properties keep units, attachment sign and prediction qu
     }
   }
 });
+
+test('lightweight explorer index exactly matches the sourced element profiles', async () => {
+  const { elementsData: index, categoryNames: categories } = await import('../data/element-index.js');
+  const { elementsData: full, categoryNames: fullCategories } = await import('../data/elements.js');
+  assert.deepEqual(categories, fullCategories);
+  assert.equal(index.length, full.length);
+  for (const entry of index) {
+    const source = full.find(item => item.number === entry.number);
+    for (const [key, value] of Object.entries(entry)) assert.deepEqual(value, source[key], `${entry.symbol}.${key}`);
+  }
+});

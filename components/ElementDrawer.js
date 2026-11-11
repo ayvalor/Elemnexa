@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { X, HelpCircle, AlertTriangle, Lightbulb, Globe, Zap, Layers, ArrowUpRight, BookOpen } from "lucide-react";
-import { categoryNames } from "../data/elements";
+import { categoryNames, elementsData } from "../data/elements";
 import "./element-drawer.css";
 
 const getCategoryColor = (category) => {
@@ -44,11 +43,12 @@ const validSourceUrl = (url) => {
   catch { return false; }
 };
 
-export default function ElementDrawer({ element, onClose }) {
-  return <AnimatePresence>{element && <DrawerContent key={element.number} element={element} onClose={onClose} />}</AnimatePresence>;
+export default function ElementDrawer({ element, onClose, scrollbarWidth }) {
+  const profile = element && elementsData.find(item => item.number === element.number);
+  return profile ? <DrawerContent key={profile.number} element={profile} onClose={onClose} scrollbarWidth={scrollbarWidth} /> : null;
 }
 
-function DrawerContent({ element, onClose }) {
+function DrawerContent({ element, onClose, scrollbarWidth }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [showMnemonic, setShowMnemonic] = useState(false);
 
@@ -56,15 +56,13 @@ function DrawerContent({ element, onClose }) {
   const panelRef = useRef(null);
   const contentRef = useRef(null);
   const closeRef = useRef(null);
-  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
     const previousPadding = document.body.style.paddingRight;
-    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
-    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     // Mark background siblings inert while keeping the whole drawer interactive.
     const siblings = [];
     let current = overlayRef.current;
@@ -103,7 +101,7 @@ function DrawerContent({ element, onClose }) {
       document.body.style.paddingRight = previousPadding;
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, [onClose, scrollbarWidth]);
 
   const bgGradient = getCategoryColor(element.category);
   const references = [...new Map([
@@ -118,30 +116,23 @@ function DrawerContent({ element, onClose }) {
     : [];
 
   return (
-      <motion.div ref={overlayRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.18 }} className="fixed inset-0 z-50 flex justify-end no-print">
+      <div ref={overlayRef} className="drawer-overlay fixed inset-0 z-50 flex justify-end no-print">
         
         {/* Backdrop overlay */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+        <div
           onClick={onClose}
           aria-hidden="true"
           className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
         />
 
         {/* Drawer panel */}
-        <motion.div
+        <div
           ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={`element-title-${element.number}`}
           tabIndex={-1}
-          initial={{ x: reducedMotion ? 0 : "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: reducedMotion ? 0 : "100%" }}
-          transition={{ ease: [0.16, 1, 0.3, 1], duration: reducedMotion ? 0 : 0.28 }}
-          className="relative z-10 flex h-dvh w-full max-w-lg flex-col border-l border-slate-200 bg-slate-50 shadow-2xl dark:border-white/10 dark:bg-slate-950 md:max-w-xl"
+          className="drawer-panel relative z-10 flex h-dvh w-full max-w-lg flex-col border-l border-slate-200 bg-slate-50 shadow-2xl dark:border-white/10 dark:bg-slate-950 md:max-w-xl"
         >
           {/* Header Banner - Category gradient */}
           <div className={`p-4 sm:p-6 bg-gradient-to-r ${bgGradient} shrink-0 border-b relative flex items-center justify-between gap-2`}>
@@ -213,15 +204,15 @@ function DrawerContent({ element, onClose }) {
                 {/* Core parameters Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Symbol</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Symbol</span>
                     <span className="text-xl font-black text-zinc-800 dark:text-white">{element.symbol}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">{element.massType === "representative isotope mass number" ? "Isotope mass number" : "Standard atomic weight"}</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">{element.massType === "representative isotope mass number" ? "Isotope mass number" : "Standard atomic weight"}</span>
                     <span className="text-xl font-bold text-zinc-800 dark:text-white">{element.massType === "representative isotope mass number" ? `[${element.massNumber}]` : `${element.mass} u`}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Phase near room temperature</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Phase near room temperature</span>
                     <span className={`text-lg font-bold ${
                       element.phase === "Gas" ? "text-cyan-700 dark:text-cyan-300" :
                       element.phase === "Liquid" ? "text-amber-700 dark:text-amber-300" :
@@ -230,7 +221,7 @@ function DrawerContent({ element, onClose }) {
                     }`}>{element.phase}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Valence Electrons</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Valence Electrons</span>
                     <span className="text-lg font-bold text-zinc-800 dark:text-white">{safeDisplay(element.valenceElectrons)}</span>
                   </div>
                 </div>
@@ -242,7 +233,7 @@ function DrawerContent({ element, onClose }) {
                 {shells.length > 0 && (
                   <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-3">
                     <div className="flex flex-wrap gap-2 justify-between items-center">
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
                         <Layers className="w-3.5 h-3.5" /> Electron Shell Configuration
                       </span>
                       <span className="text-xs text-zinc-800 dark:text-white font-mono bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded">
@@ -253,7 +244,7 @@ function DrawerContent({ element, onClose }) {
                     <div className="flex flex-wrap gap-2 items-center justify-center p-2 bg-slate-100/70 dark:bg-black/10 rounded-lg">
                       {shells.map((val, idx) => (
                         <div key={idx} className="flex flex-col items-center p-2 border border-slate-200 dark:border-white/5 bg-white/60 dark:bg-white/5 rounded-lg w-12">
-                          <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold">Shell {idx+1}</span>
+                          <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold">Shell {idx+1}</span>
                           <span className="text-sm font-black text-indigo-600 dark:text-indigo-300 mt-1">{val}</span>
                         </div>
                       ))}
@@ -264,11 +255,11 @@ function DrawerContent({ element, onClose }) {
                 {/* Chemical Group & Period */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Group</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Group</span>
                     <span className="text-base font-bold text-zinc-800 dark:text-white">{element.group || "N/A"}</span>
                   </div>
                   <div className="glass-panel-light p-3 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Period</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Period</span>
                     <span className="text-base font-bold text-zinc-800 dark:text-white">{element.period}</span>
                   </div>
                 </div>
@@ -281,15 +272,15 @@ function DrawerContent({ element, onClose }) {
                 
                 {/* Subatomic Particle breakdown */}
                 <div className="glass-panel-light p-4 rounded-xl">
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Subatomic counts</span>
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Subatomic counts</span>
                   <div className="grid grid-cols-1 min-[360px]:grid-cols-3 gap-2 mt-3">
                     <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-xl text-center">
-                      <div className="text-xs text-rose-600 dark:text-rose-300 font-bold">Protons (p+)</div>
-                      <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{safeDisplay(element.protons)}</div>
+                      <div className="text-xs text-rose-700 dark:text-rose-300 font-bold">Protons (p+)</div>
+                      <div className="text-2xl font-black text-rose-700 dark:text-rose-400 mt-1">{safeDisplay(element.protons)}</div>
                     </div>
                     <div className="bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl text-center">
-                      <div className="text-xs text-blue-600 dark:text-blue-300 font-bold">Neutrons (n0)</div>
-                      <div className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{safeDisplay(element.neutrons)}</div>
+                      <div className="text-xs text-blue-700 dark:text-blue-300 font-bold">Neutrons (n0)</div>
+                      <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1">{safeDisplay(element.neutrons)}</div>
                     </div>
                     <div className="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl text-center">
                       <div className="text-xs text-indigo-600 dark:text-indigo-300 font-bold">Electrons (e-)</div>
@@ -303,18 +294,18 @@ function DrawerContent({ element, onClose }) {
                 {/* Configurations parameters */}
                 <div className="flex flex-col gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Quantum Electron Configuration</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Quantum Electron Configuration</span>
                     <span className="text-sm font-mono font-bold text-slate-900 dark:text-white mt-1">{safeDisplay(element.quantumConfig)}</span>
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Atomic Radius</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Atomic Radius</span>
                     <span className="text-base font-bold text-zinc-800 dark:text-white mt-1">
                       {typeof element.radius === "number" ? `${element.radius} pm` : safeDisplay(element.radius)}
                     </span>
                     {element.radiusNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.radiusNote}</p>}
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Common Ions Formed</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Common Ions Formed</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.commonIons)}</span>
                     {element.commonIonsNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.commonIonsNote}</p>}
                   </div>
@@ -329,11 +320,11 @@ function DrawerContent({ element, onClose }) {
                 {/* Melting / Boiling points */}
                 <div className="element-physical-grid grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Melting Point</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Melting Point</span>
                     <span className="text-sm font-bold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.meltingPoint)}</span>
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Boiling Point</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Boiling Point</span>
                     <span className="text-sm font-bold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.boilingPoint)}</span>
                   </div>
                 </div>
@@ -341,38 +332,38 @@ function DrawerContent({ element, onClose }) {
                 {/* Physical metrics */}
                 <div className="element-physical-grid grid grid-cols-2 gap-4">
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Density</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Density</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.density)}</span>
                   </div>
                   <div className="glass-panel-light p-3.5 rounded-xl flex flex-col">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">Specific Heat Capacity</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">Specific Heat Capacity</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-1">{safeDisplay(element.specificHeat)}</span>
                   </div>
                 </div>
 
                 {/* Energy attributes */}
                 <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-4">
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
                     <Zap className="w-3.5 h-3.5" /> Electrodynamic & Energy Properties
                   </span>
                   
                   <div className="grid grid-cols-1 min-[420px]:grid-cols-3 gap-3">
                     <div className="bg-black/5 dark:bg-white/5 p-2.5 rounded-lg text-center">
-                      <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Electronegativity</span>
+                      <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold block">Electronegativity</span>
                       <span className="text-sm font-bold text-zinc-800 dark:text-white block mt-1">{safeDisplay(element.electronegativity)}</span>
                     </div>
                     <div className="bg-black/5 dark:bg-white/5 p-2.5 rounded-lg text-center">
-                      <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">1st Ionization</span>
+                      <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold block">1st Ionization</span>
                       <span className="text-sm font-bold text-zinc-800 dark:text-white block mt-1">{safeDisplay(element.ionizationEnergy)}</span>
                     </div>
                     <div className="bg-black/5 dark:bg-white/5 p-2.5 rounded-lg text-center">
-                      <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Electron Affinity</span>
+                      <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold block">Electron Affinity</span>
                       <span className="text-sm font-bold text-zinc-800 dark:text-white block mt-1">{safeDisplay(element.electronAffinity)}</span>
                     </div>
                   </div>
                   {element.electronAffinityNote && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.electronAffinityNote}</p>}
                   <div className="flex flex-col text-left border-t border-black/5 dark:border-white/5 pt-3">
-                    <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold block">Common Oxidation States</span>
+                    <span className="text-[9px] text-zinc-600 dark:text-zinc-400 font-bold block">Common Oxidation States</span>
                     <span className="text-sm font-semibold text-zinc-800 dark:text-white mt-0.5">{safeDisplay(element.oxidationStates)}</span>
                     {element.oxidationStatesNote && <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{element.oxidationStatesNote}</p>}
                   </div>
@@ -386,22 +377,22 @@ function DrawerContent({ element, onClose }) {
                 
                 {/* Discovery History */}
                 <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-2">
-                  <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">
                     <Globe className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /> Discovery & History
                   </div>
                   <div className="element-history-grid grid grid-cols-2 gap-3 text-xs text-left mt-1">
                     <div>
-                      <span className="text-zinc-500 dark:text-zinc-400 block">Discovery Year:</span>
+                      <span className="text-zinc-600 dark:text-zinc-400 block">Discovery Year:</span>
                       <span className="font-semibold text-zinc-800 dark:text-white">{safeDisplay(element.discoveryYear)}</span>
                     </div>
                     <div>
-                      <span className="text-zinc-500 dark:text-zinc-400 block">Discovered By:</span>
+                      <span className="text-zinc-600 dark:text-zinc-400 block">Discovered By:</span>
                       <span className="font-semibold text-zinc-800 dark:text-white">{safeDisplay(element.discoveredBy)}</span>
                     </div>
                   </div>
                   {element.namedBy && element.namedBy !== element.discoveredBy && (
                     <div className="text-xs text-left mt-1">
-                      <span className="text-zinc-500 dark:text-zinc-400">Naming / name origin:</span>{" "}
+                      <span className="text-zinc-600 dark:text-zinc-400">Naming / name origin:</span>{" "}
                       <span className="font-semibold text-zinc-800 dark:text-white">{element.namedBy}</span>
                     </div>
                   )}
@@ -410,7 +401,7 @@ function DrawerContent({ element, onClose }) {
                 {/* Practical Uses */}
                 {element.commonUses && (
                   <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-2 text-left">
-                    <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">
                       <Lightbulb className="w-3.5 h-3.5 text-yellow-400" /> Everyday Practical Uses
                     </div>
                     <p className="text-xs text-zinc-700 dark:text-zinc-200 mt-1 leading-relaxed">{element.commonUses}</p>
@@ -420,7 +411,7 @@ function DrawerContent({ element, onClose }) {
                 {/* STSE Context */}
                 {element.stseContext && (
                   <div className="glass-panel-light p-4 rounded-xl flex flex-col gap-2 text-left">
-                    <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/5 pb-2 text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-wider">
                       <HelpCircle className="w-3.5 h-3.5 text-cyan-400" /> Science, Technology, Society & Environment (STSE)
                     </div>
                     <p className="text-xs text-zinc-700 dark:text-zinc-300 mt-1 leading-relaxed italic">{element.stseContext}</p>
@@ -430,7 +421,7 @@ function DrawerContent({ element, onClose }) {
                 {/* Hazard Risk Profiles */}
                 {element.hazardWarning && (
                   <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex flex-col gap-2 text-left">
-                    <div className="flex items-center gap-2 text-red-400 font-extrabold text-[10px] uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-red-700 dark:text-red-400 font-extrabold text-[10px] uppercase tracking-wider">
                       <AlertTriangle className="w-4 h-4 text-red-400" /> Hazard & Risk Warnings
                     </div>
                     <p className="text-xs text-red-700 dark:text-red-200/80 leading-relaxed font-semibold">{element.hazardWarning}</p>
@@ -442,7 +433,7 @@ function DrawerContent({ element, onClose }) {
                   <div className="flex flex-wrap gap-2 justify-between items-center">
                     <div className="flex flex-col text-left">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">Student Memory Mnemonic</span>
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">Helpful rhyme to memorize chemistry groups</span>
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400">Helpful rhyme to memorize chemistry groups</span>
                     </div>
                     <button
                       type="button"
@@ -460,19 +451,18 @@ function DrawerContent({ element, onClose }) {
                   </div>
 
                   {showMnemonic && (
-                    <motion.div
+                    <div
                       id={`mnemonic-${element.number}`}
-                      initial={reducedMotion ? false : { opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
+
                       className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg text-center"
                     >
-                      <span className="text-[10px] uppercase tracking-wider text-amber-400 font-bold block">
+                      <span className="text-[10px] uppercase tracking-wider text-amber-800 dark:text-amber-300 font-bold block">
                         Periodic Mnemonic Association
                       </span>
                       <span className="text-sm font-bold text-zinc-800 dark:text-white mt-1 block">
                         {element.mnemonic || "N/A Mnemonic"}
                       </span>
-                    </motion.div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -492,7 +482,7 @@ function DrawerContent({ element, onClose }) {
               )}
             </section>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
   );
 }

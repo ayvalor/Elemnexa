@@ -1,4 +1,5 @@
 import { test as base, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 import { elementsData } from '../../data/elements.js';
 
 const test = base.extend({
@@ -11,7 +12,7 @@ const test = base.extend({
 });
 
 async function openApp(page) {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
@@ -47,7 +48,8 @@ async function textFits(locator) {
     const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
     let text;
     while ((text = walker.nextNode())) {
-      if (!text.textContent.trim()) continue;
+      // Screen-reader-only descriptions are intentionally clipped, not visible labels.
+      if (!text.textContent.trim() || text.parentElement.closest('.sr-only')) continue;
       const range = document.createRange();
       range.selectNodeContents(text);
       for (const rect of range.getClientRects()) {
@@ -95,7 +97,7 @@ test('element tiles retain readable, unclipped identities and hero cards open de
     const symbol = card.locator('.element-symbol, .element-preview-symbol');
     expect(await symbol.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(20);
   }
-  const feature = page.getByRole('button', { name: 'Explore Carbon', exact: true });
+  const feature = page.getByRole('button', { name: /Explore.*Carbon/ });
   await feature.click();
   await expect(page.getByRole('dialog', { name: 'Carbon', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');

@@ -1,11 +1,39 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
+
+test('repeated detail opens preserve explorer state, background isolation, scroll lock, and focus', async ({ page }) => {
+  await gotoHome(page);
+  const search = page.getByRole('searchbox', { name: /Search elements/ });
+  await search.fill('Carbon');
+  await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
+  const carbon = page.getByRole('button', { name: /Atomic number 6\b.*Carbon/ });
+  const originalStyles = await page.evaluate(() => ({ overflow: document.body.style.overflow, padding: document.body.style.paddingRight }));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await carbon.click();
+    const dialog = page.getByRole('dialog', { name: 'Carbon', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Close Carbon details' })).toBeFocused();
+    await expect(page.locator('.app-shell')).toHaveJSProperty('inert', true);
+    await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+    await expect(dialog.getByRole('tab', { name: 'Overview', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await dialog.getByRole('tab', { name: 'Structure', exact: true }).click();
+    await expect(dialog.getByRole('tabpanel')).toContainText('Electron');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(carbon).toBeFocused();
+    await expect(page.locator('.app-shell')).toHaveJSProperty('inert', false);
+    await expect(search).toHaveValue('Carbon');
+    await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
+    expect(await page.evaluate(() => ({ overflow: document.body.style.overflow, padding: document.body.style.paddingRight }))).toEqual(originalStyles);
+  }
+});
 
 test('enriched details show scientific qualifications and readable history on mobile', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
-  await page.getByRole('button', { name: 'Oganesson, Og, atomic number 118', exact: true }).click();
+  await page.getByRole('button', { name: /Atomic number 118\b.*Oganesson/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Oganesson', exact: true });
   const tabs = dialog.getByRole('tablist', { name: 'Element details' });
   const panel = dialog.getByRole('tabpanel');
@@ -24,11 +52,11 @@ test('enriched details show scientific qualifications and readable history on mo
 });
 
 test('element detail tabs fit and reference notes scroll with the content', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
-  await page.getByRole('button', { name: 'Oganesson, Og, atomic number 118', exact: true }).click();
+  await page.getByRole('button', { name: /Atomic number 118\b.*Oganesson/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Oganesson', exact: true });
   const tabs = dialog.getByRole('tablist', { name: 'Element details' });
   const tabMeasurements = await tabs.getByRole('tab').evaluateAll(nodes => nodes.map(node => {

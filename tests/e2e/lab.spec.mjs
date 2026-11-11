@@ -1,4 +1,5 @@
 import { test as base, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 // Surface JavaScript crashes alongside the user-visible assertions in every test.
 const test = base.extend({
@@ -11,9 +12,9 @@ const test = base.extend({
 });
 
 async function openApp(page) {
-  await page.goto('/');
+  await gotoHome(page);
   await expect(page.getByRole('heading', { name: 'Interactive Periodic Table', exact: true })).toBeVisible();
-  // Wait for hydration by using a control that updates client state.
+  // Confirm the hydrated control updates client state.
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
@@ -41,7 +42,7 @@ test('all elements render; searching, filters, and empty state work', async ({ p
   await search.fill(' oganesson ');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
   await expect(elementButtons(page)).toHaveCount(1);
-  await expect(elementButtons(page)).toHaveAccessibleName('Oganesson, Og, atomic number 118');
+  await expect(elementButtons(page)).toHaveAccessibleName(/Atomic number 118\b.*Oganesson/);
   await search.fill('not-an-element');
   await expect(page.getByRole('heading', { name: 'No matching elements' })).toBeVisible();
   await expect(elementButtons(page)).toHaveCount(0);
@@ -102,7 +103,7 @@ test('keyboard tabs and modal focus remain usable, including animated close', as
   await expect(page.getByRole('tab', { name: 'Chemistry Suite', exact: true })).toBeFocused();
   await expect(page.getByRole('tab', { name: 'Chemistry Suite', exact: true })).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('Home');
-  const hydrogen = page.getByRole('button', { name: 'Hydrogen, H, atomic number 1', exact: true });
+  const hydrogen = page.getByRole('button', { name: /Atomic number 1\b.*Hydrogen/ });
   await hydrogen.focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Hydrogen', exact: true });
@@ -205,7 +206,7 @@ test('worksheet generation, answers, empty states, and printing stay consistent'
 
 test('serves security headers and loads self-hosted fonts without remote requests', async ({ page }) => {
   const externalRequests = [];
-  const response = await page.goto('/');
+  const response = await gotoHome(page);
   const origin = new URL(page.url()).origin;
   page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests.push(request.url()); });
   await page.reload();
