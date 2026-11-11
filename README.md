@@ -2,7 +2,6 @@
 
 **Explore elements. Understand chemistry.**
 
-![Elemnexa](public/opengraph-image.png)
 
 A colorful, accessible chemistry learning platform built with Next.js and React. Explore all 118 elements, balance neutral chemical equations, calculate molar masses, consult a qualitative solubility matrix, experiment with a schematic atom model, and print practice worksheets.
 
