@@ -53,7 +53,9 @@ jobs:
     # Derive its version from npm ci so dependency updates cannot drift from it.
     container:
       image: mcr.microsoft.com/playwright:v${{ needs.quality.outputs.playwright-version }}-noble
-      options: --ipc=host
+      # GitHub's mounted home/workspace belong to UID 1001; Firefox requires
+      # its process user to own the home directory.
+      options: --user 1001 --ipc=host
     defaults:
       run:
         shell: bash

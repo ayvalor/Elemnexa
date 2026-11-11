@@ -13,7 +13,11 @@ const test = base.extend({
 async function openApp(page) {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Interactive Periodic Table', exact: true })).toBeVisible();
-  // Wait for hydration by using a control that updates client state.
+  // On mobile, the automatic card view confirms hydration before input events.
+  if (page.viewportSize().width < 768) {
+    await expect(page.getByRole('button', { name: 'Element cards view' })).toHaveAttribute('aria-pressed', 'true');
+  }
+  // Confirm the hydrated control updates client state.
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
