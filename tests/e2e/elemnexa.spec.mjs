@@ -5,7 +5,8 @@ test('Elemnexa identity, keyboard search, view switch, discovery, and navigation
   await expect(page).toHaveTitle('Elemnexa — Explore elements. Understand chemistry.');
   await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
   const origin = process.env.SITE_URL || 'https://elemnexa.com';
-  await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', `${new URL(origin).origin}/`);
+  const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
+  expect(new URL(canonical).href).toBe(new URL(origin).href);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Carbon');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
