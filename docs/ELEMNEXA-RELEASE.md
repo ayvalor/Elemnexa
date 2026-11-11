@@ -4,7 +4,7 @@ The project is now **Elemnexa — Explore elements. Understand chemistry.** The 
 
 ## Changes
 
-- Original orbital E identity, favicon, Apple icon, regular/maskable install icons, social preview, page metadata, error and missing-page screens, package name, and documentation.
+- Generated teal–violet E identity with a hexagonal detail, favicon, Apple icon, regular/maskable install icons, social preview, page metadata, error and missing-page screens, package name, and documentation. Source artwork and export instructions are in `assets/brand/README.md`.
 - Shared light/dark design tokens, colorful element families, interactive discovery cards, clearer workspace navigation, responsive table/card switching, keyboard search, and random discovery.
 - CSS entry/hover transitions with reduced-motion support replace Framer Motion and its two dependencies. Focus trapping, background inertness, Escape, focus restoration, and scroll restoration remain in the drawer.
 - Compact generated element index on the initial page. Detailed, sourced profiles and tools load on demand. Index parity is checked against the original data. Offscreen cards use progressive CSS rendering containment; browsers without support retain the full layout.

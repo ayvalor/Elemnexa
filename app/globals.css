@@ -92,7 +92,7 @@ input, select, textarea { max-width: 100%; }
 .mesh-gradient-bg { position: absolute; inset: 0 0 auto; height: 700px; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 76% 30%, #9bdac914, transparent 60%); }
 .site-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 0; border-bottom: 1px solid var(--line); }
 .brand { display: flex; gap: .7rem; align-items: center; text-decoration: none; min-width: 0; }
-.brand-mark { width: 43px; height: 43px; flex: none; color: #087f70; }
+.brand-mark { width: 43px; height: 43px; flex: none; object-fit: contain; }
 .brand-title { font-family: var(--font-display); display: block; font-weight: 800; font-size: 1.5rem; letter-spacing: -.065em; line-height: 1.2; }
 .brand-caption { display: block; font-size: .62rem; color: var(--muted); margin-top: .2rem; }
 .header-links { display: flex; align-items: center; gap: 2rem; margin-left: auto; margin-right: 1.8rem; }
@@ -183,7 +183,7 @@ input, select, textarea { max-width: 100%; }
 .site-footer { margin: 3rem 0 1.5rem; padding: 2rem 0 0; border-top: 1px solid var(--line); color: var(--muted); }
 .footer-top { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding-bottom: 1.5rem; }
 .footer-identity { display: flex; align-items: center; gap: .7rem; }
-.footer-mark { width: 38px; height: 38px; flex-shrink: 0; color: #087f70; }
+.footer-mark { width: 38px; height: 38px; flex-shrink: 0; object-fit: contain; }
 .footer-identity strong { font: 750 1.1rem var(--font-display); letter-spacing: -.05em; color: var(--foreground); }
 .footer-identity p { margin-top: .25rem; font-size: .65rem; }
 .footer-links { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem 1.2rem; font-size: .72rem; font-weight: 550; }

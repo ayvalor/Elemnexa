@@ -38,6 +38,7 @@ test('brand assets, manifest, robots, and friendly missing page are served', asy
   const data = await manifest.json();
   expect(data.name).toBe('Elemnexa');
   for (const icon of data.icons) expect((await request.get(icon.src)).ok()).toBe(true);
+  expect(data.icons).toContainEqual({ src: '/elemnexa-mark.png', sizes: '512x512', type: 'image/png', purpose: 'any' });
   const origin = new URL(process.env.SITE_URL || 'https://elemnexa.vercel.app').origin;
   const robots = await request.get('/robots.txt');
   expect(robots.ok()).toBe(true);
@@ -45,7 +46,21 @@ test('brand assets, manifest, robots, and friendly missing page are served', asy
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toContain(`<loc>${origin}</loc>`);
-  expect((await request.get('/opengraph-image.png')).ok()).toBe(true);
+  expect((await request.get('/elemnexa-social.png')).ok()).toBe(true);
+  await gotoHome(page);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', `${origin}/elemnexa-social.png`);
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute('content', `${origin}/elemnexa-social.png`);
+  for (const link of await page.locator('link[rel="icon"], link[rel="apple-touch-icon"]').all()) {
+    expect((await request.get(await link.getAttribute('href'))).ok()).toBe(true);
+  }
+  for (const selector of ['.brand-mark', '.footer-mark']) {
+    const logo = page.locator(`img${selector}`);
+    await logo.scrollIntoViewIfNeeded();
+    await expect(logo).toHaveAttribute('alt', '');
+    await expect(logo).toHaveAttribute('aria-hidden', 'true');
+    await expect.poll(() => logo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+    expect(await logo.evaluate(image => image.currentSrc)).toContain('elemnexa-mark.png');
+  }
   await page.goto('/undiscovered-page');
   await expect(page.getByRole('heading', { name: 'An undiscovered corner.' })).toBeVisible();
   await page.getByRole('link', { name: 'Explore the elements' }).click();
