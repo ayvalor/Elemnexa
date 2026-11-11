@@ -47,7 +47,8 @@ async function textFits(locator) {
     const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
     let text;
     while ((text = walker.nextNode())) {
-      if (!text.textContent.trim()) continue;
+      // Screen-reader-only descriptions are intentionally clipped, not visible labels.
+      if (!text.textContent.trim() || text.parentElement.closest('.sr-only')) continue;
       const range = document.createRange();
       range.selectNodeContents(text);
       for (const rect of range.getClientRects()) {
