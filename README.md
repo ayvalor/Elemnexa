@@ -8,7 +8,7 @@ A colorful, accessible chemistry learning platform built with Next.js and React.
 
 ## Development
 
-Use Node.js 24 LTS (Node >=22.13 is supported) and npm. No database or API keys are required. The production origin defaults to `https://elemnexa.com`; override it with the `SITE_URL` build variable if needed (see `.env.example`).
+Use Node.js 24 LTS (Node >=22.13 is supported) and npm. No database or API keys are required. The production origin defaults to `https://elemnexa.vercel.app`; override it with the `SITE_URL` build variable if needed (see `.env.example`).
 
 ```sh
 npm ci
@@ -71,9 +71,9 @@ See [the repair and validation notes](docs/REPAIR-NOTES.md). Keep the lockfile c
 ## Production deployment
 
 1. Use Node.js 24 LTS and run `npm ci`.
-2. Set `SITE_URL=https://elemnexa.com`, then run `npm run check`.
+2. Set `SITE_URL=https://elemnexa.vercel.app`, then run `npm run check`.
 3. Run the browser suite against `npm run start`, as shown above. Serve the application over HTTPS using a Next.js-compatible platform or reverse proxy.
-4. Confirm the canonical URL, social image, `/robots.txt`, `/sitemap.xml`, security headers, and icons on the deployed host. If `SITE_URL` is unset, metadata and the sitemap use the confirmed `https://elemnexa.com` origin.
+4. Confirm the canonical URL, social image, `/robots.txt`, `/sitemap.xml`, security headers, and icons on the deployed host. If `SITE_URL` is unset, metadata and the sitemap use the planned `https://elemnexa.vercel.app` origin.
 
 Source links continue to use the existing [GitHub repository](https://github.com/ayvalor/Rasayan-Lab). The application and package are branded Elemnexa; changing the GitHub repository slug or production hostname is a separate hosting operation. If the repository is renamed, update its clone URL, remote, and source links after GitHub confirms the new address.
 
@@ -81,12 +81,13 @@ The scoped `minimatch` override patches GHSA-g3hv-75wg-m249 in the development-o
 
 See [the Elemnexa release notes](docs/ELEMNEXA-RELEASE.md) for the validation record and deployment limitations.
 
-## Vercel hosting and Wix domain
+## Vercel subdomain migration
 
-1. Import this GitHub repository into Vercel and use the detected **Next.js** framework preset, Node.js **24.x**, and the repository root. The normal build command is `npm run build`; no custom output directory is required.
-2. Add `SITE_URL=https://elemnexa.com` in Vercel → Project → Settings → Environment Variables for Production, then redeploy after changing it. The application uses this origin for its canonical URL, Open Graph URL/image, Twitter image, robots sitemap link, and sitemap entries.
-3. Add `elemnexa.com` and optionally `www.elemnexa.com` under Vercel → Settings → Domains. Choose the apex domain as primary and redirect `www` to it in Vercel.
-4. In Wix DNS settings, enter the **exact records Vercel displays for this project**. Keep Wix as the registrar; preserve unrelated mail and verification records. Do not assume a universal Vercel IP or CNAME target.
-5. Wait for Vercel domain verification and HTTPS provisioning. Confirm the live canonical tag points to `https://elemnexa.com/`, and check `/sitemap.xml`, `/robots.txt`, social previews, and mobile behavior. Submit `https://elemnexa.com/sitemap.xml` to your search-engine webmaster account when ready.
+The planned production URL is **https://elemnexa.vercel.app**, using Vercel’s free subdomain. A custom domain purchase or Wix DNS setup is not required. `SITE_URL` controls SEO output; it does not rename a Vercel project, assign a domain, or change routing.
 
-These instructions prepare the project for hosting. Domain purchase, DNS changes, Vercel import, deployment, and search-console submission have not been performed by this change.
+1. Keep the existing live deployment and its URL in place while reviewing this branch. Do not remove its domain or add a redirect before the new address is assigned and verified.
+2. If deploying these changes to the existing live host before migration, set `SITE_URL` to that host’s current public origin at build time. This keeps canonical and sitemap URLs aligned with the site actually serving production.
+3. When ready, manually configure the intended free subdomain in Vercel and verify its availability. Use the detected **Next.js** framework preset, Node.js **24.x**, and the normal `npm run build` command; no custom output directory is required.
+4. Set `SITE_URL=https://elemnexa.vercel.app` for the intended production deployment and rebuild. Verify the canonical tag, Open Graph/Twitter URLs, `/sitemap.xml`, `/robots.txt`, and image URLs on the new host before switching traffic or changing old-domain routing.
+
+No Vercel project settings, environment variables, domain assignments, deployment URLs, DNS records, or redirects are changed by this source configuration. Existing `SITE_URL` settings continue to take precedence over the default; update them manually at the appropriate migration stage.

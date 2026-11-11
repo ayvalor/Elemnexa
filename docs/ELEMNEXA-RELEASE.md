@@ -26,7 +26,7 @@ Automated checks do not establish full accessibility conformance or replace assi
 
 ## Deployment
 
-The confirmed production origin is **https://elemnexa.com**, hosted on Vercel with the domain registered through Wix. It is the default for canonical URLs, social-image URLs, robots, and the sitemap. `SITE_URL` remains a build-time override; set `SITE_URL=https://elemnexa.com` in Vercel Production environment settings. The README includes Vercel/Wix setup instructions. No domain purchase, DNS change, or deployment was performed.
+The planned production origin is **https://elemnexa.vercel.app**, using Vercel’s free subdomain. It is the source default for canonical URLs, social-image URLs, robots, and the sitemap. `SITE_URL` remains a build-time override. The README describes a manual, staged migration: keep `SITE_URL` aligned with the existing live origin until the new address is assigned and verified, then set it to the new origin and rebuild. No Vercel settings, deployment URLs, domain assignments, DNS records, or redirects are changed automatically. No custom domain purchase is planned.
 
 The GitHub repository address remains `ayvalor/Rasayan-Lab` so source links remain valid. The code and user-facing brand use Elemnexa. Rename the GitHub repository in its settings and update the remote/source links when the new address is confirmed.
 

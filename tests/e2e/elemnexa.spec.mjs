@@ -4,7 +4,7 @@ test('Elemnexa identity, keyboard search, view switch, discovery, and navigation
   await page.goto('/');
   await expect(page).toHaveTitle('Elemnexa — Explore elements. Understand chemistry.');
   await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
-  const origin = process.env.SITE_URL || 'https://elemnexa.com';
+  const origin = process.env.SITE_URL || 'https://elemnexa.vercel.app';
   const canonical = await page.locator('link[rel=canonical]').getAttribute('href');
   expect(new URL(canonical).href).toBe(new URL(origin).href);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
@@ -37,7 +37,7 @@ test('brand assets, manifest, robots, and friendly missing page are served', asy
   const data = await manifest.json();
   expect(data.name).toBe('Elemnexa');
   for (const icon of data.icons) expect((await request.get(icon.src)).ok()).toBe(true);
-  const origin = new URL(process.env.SITE_URL || 'https://elemnexa.com').origin;
+  const origin = new URL(process.env.SITE_URL || 'https://elemnexa.vercel.app').origin;
   const robots = await request.get('/robots.txt');
   expect(robots.ok()).toBe(true);
   expect(await robots.text()).toContain(`Sitemap: ${origin}/sitemap.xml`);
