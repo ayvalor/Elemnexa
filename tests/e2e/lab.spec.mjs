@@ -1,4 +1,5 @@
 import { test as base, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 // Surface JavaScript crashes alongside the user-visible assertions in every test.
 const test = base.extend({
@@ -11,12 +12,8 @@ const test = base.extend({
 });
 
 async function openApp(page) {
-  await page.goto('/');
+  await gotoHome(page);
   await expect(page.getByRole('heading', { name: 'Interactive Periodic Table', exact: true })).toBeVisible();
-  // On mobile, the automatic card view confirms hydration before input events.
-  if (page.viewportSize().width < 768) {
-    await expect(page.getByRole('button', { name: 'Element cards view' })).toHaveAttribute('aria-pressed', 'true');
-  }
   // Confirm the hydrated control updates client state.
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
@@ -209,7 +206,7 @@ test('worksheet generation, answers, empty states, and printing stay consistent'
 
 test('serves security headers and loads self-hosted fonts without remote requests', async ({ page }) => {
   const externalRequests = [];
-  const response = await page.goto('/');
+  const response = await gotoHome(page);
   const origin = new URL(page.url()).origin;
   page.on('request', request => { if (new URL(request.url()).origin !== origin) externalRequests.push(request.url()); });
   await page.reload();

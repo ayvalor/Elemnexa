@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 async function openAtom(page) {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');

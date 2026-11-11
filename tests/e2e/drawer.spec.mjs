@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 test('enriched details show scientific qualifications and readable history on mobile', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
@@ -24,7 +25,7 @@ test('enriched details show scientific qualifications and readable history on mo
 });
 
 test('element detail tabs fit and reference notes scroll with the content', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');

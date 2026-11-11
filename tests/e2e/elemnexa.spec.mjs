@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 test('Elemnexa identity, keyboard search, view switch, discovery, and navigation', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   await expect(page).toHaveTitle('Elemnexa — Explore elements. Understand chemistry.');
   await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
   const origin = process.env.SITE_URL || 'https://elemnexa.vercel.app';

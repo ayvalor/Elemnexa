@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 import AxeBuilder from '@axe-core/playwright';
 
 async function audit(page, label) {
@@ -9,7 +10,7 @@ for (const theme of ['light', 'dark']) {
   test(`WCAG checks across the learning workspaces in ${theme} mode`, async ({ page }) => {
     test.setTimeout(120_000);
     await page.addInitScript(theme => localStorage.setItem('theme', theme), theme);
-    await page.goto('/');
+    await gotoHome(page);
     await page.getByRole('searchbox', { name: /Search elements/ }).fill('Carbon');
     await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
     await page.getByRole('searchbox', { name: /Search elements/ }).clear();

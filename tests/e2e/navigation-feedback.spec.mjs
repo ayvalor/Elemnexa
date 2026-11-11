@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 
 test('workspace tabs have thin borders, fit their labels and support keyboard navigation', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Carbon');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
@@ -30,7 +31,7 @@ test('workspace tabs have thin borders, fit their labels and support keyboard na
 });
 
 test('Instagram profile and feedback use the requested account and remain reachable on mobile', async ({ page }) => {
-  await page.goto('/');
+  await gotoHome(page);
   const footer = page.locator('.site-footer');
   await footer.scrollIntoViewIfNeeded();
   const profile = footer.getByRole('link', { name: '@ayvalor on Instagram (opens in a new tab)', exact: true });

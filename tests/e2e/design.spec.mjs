@@ -1,4 +1,5 @@
 import { test as base, expect } from '@playwright/test';
+import { gotoHome } from './helpers.mjs';
 import { elementsData } from '../../data/elements.js';
 
 const test = base.extend({
@@ -11,12 +12,7 @@ const test = base.extend({
 });
 
 async function openApp(page) {
-  await page.goto('/');
-  // The responsive view is applied after hydration. Wait for that client
-  // update before filling a server-rendered input on mobile WebKit.
-  if (page.viewportSize().width < 768) {
-    await expect(page.getByRole('button', { name: 'Element cards view' })).toHaveAttribute('aria-pressed', 'true');
-  }
+  await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Hydrogen');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
