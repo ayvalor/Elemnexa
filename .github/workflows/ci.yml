@@ -8,46 +8,93 @@ permissions:
 concurrency:
   group: quality-${{ github.ref }}
   cancel-in-progress: true
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  SITE_URL: https://elemnexa.vercel.app
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      NEXT_TELEMETRY_DISABLED: 1
-      SITE_URL: https://elemnexa.vercel.app
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      playwright-version: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
+      - name: Read the installed Playwright version
+        id: playwright
+        run: node -p '"version=" + require("@playwright/test/package.json").version' >> "$GITHUB_OUTPUT"
       - run: npm run lint
       - run: npm test
       - run: npm audit --audit-level=moderate
       - run: npm run build
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - name: Test the production build in three browser engines
-        run: |
-          npm run start -- --hostname 127.0.0.1 > /tmp/elemnexa-server.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          ready=0
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000 > /dev/null; then ready=1; break; fi
-            sleep 1
-          done
-          if [ "$ready" -ne 1 ]; then cat /tmp/elemnexa-server.log; exit 1; fi
-          npm run test:e2e
-        env:
-          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
-          PLAYWRIGHT_CROSS_BROWSER: 1
+      - name: Package the production build without the compiler cache
+        run: tar --exclude='.next/cache' -czf /tmp/elemnexa-build.tgz .next
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: failure()
         with:
-          name: elemnexa-browser-report
+          name: elemnexa-production-build
+          path: /tmp/elemnexa-build.tgz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
+  browsers:
+    needs: quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    # This image already contains all browser binaries and Linux libraries.
+    # Derive its version from npm ci so dependency updates cannot drift from it.
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.quality.outputs.playwright-version }}-noble
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      PLAYWRIGHT_CROSS_BROWSER: 1
+      PLAYWRIGHT_TEST_PRODUCTION: 1
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: elemnexa-production-build
+          path: /tmp/elemnexa-build
+      - run: tar -xzf /tmp/elemnexa-build/elemnexa-build.tgz
+      - name: Test the production build in three browser engines
+        # Stop Playwright first, leaving time to write and upload diagnostics.
+        timeout-minutes: 12
+        run: npm run test:e2e -- --shard=${{ matrix.shard }}/3 --global-timeout=600000
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: ${{ !cancelled() }}
+        with:
+          name: elemnexa-browser-report-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
-            /tmp/elemnexa-server.log
           retention-days: 14
+
+  # Keep the existing required check name and fail if any prerequisite fails
+  # or is skipped; a skipped browser suite must never produce a green gate.
+  validate:
+    if: ${{ always() }}
+    needs: [quality, browsers]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every quality and browser job to pass
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          BROWSER_RESULT: ${{ needs.browsers.result }}
+        run: test "$QUALITY_RESULT" = success && test "$BROWSER_RESULT" = success

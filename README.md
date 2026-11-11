@@ -38,6 +38,10 @@ Playwright starts a development server by default. To test a production build, s
 PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 npm run test:e2e
 ```
 
+Alternatively, `PLAYWRIGHT_TEST_PRODUCTION=1 npm run test:e2e` lets Playwright start, wait for, and stop the production server after you build. Port 3000 must be free.
+
+CI builds once and shares that artifact across three parallel test shards. Each shard uses Microsoft's Playwright image at the installed package version, with browser binaries and Linux dependencies already included; it does not run APT or download browsers. Every existing test and browser project remains enabled. Playwright has a ten-minute limit per shard so it can write diagnostics before the job deadline, and each shard uploads its report. The final `validate` check requires both the quality job and every browser shard to succeed.
+
 A managed environment with an existing Chromium installation can set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium`. The default Chromium suite covers desktop (1440px), tablet (768px), the reviewed 776×751 layout, mobile (390px), and small mobile (320px), including keyboard controls, saved themes, calculations, print layouts, view switching, brand assets, empty states, and page overflow. Axe checks WCAG 2.2 AA rules in both themes across the table, cards, element details, tools, and worksheets. `npm run test:a11y` runs just those accessibility checks. `PLAYWRIGHT_CROSS_BROWSER=1` adds desktop Firefox and mobile WebKit; CI runs all three engines against a production build. Browser emulation supplements real-device testing; it does not establish compatibility with every browser or device.
 
 ## Scientific scope and references

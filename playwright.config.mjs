@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 const externalServer = process.env.PLAYWRIGHT_BASE_URL;
+const productionServer = process.env.PLAYWRIGHT_TEST_PRODUCTION === '1';
 const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === '1';
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
@@ -35,9 +36,9 @@ export default defineConfig({
     ] : []),
   ],
   webServer: externalServer ? undefined : {
-    command: 'npm run dev -- --hostname 127.0.0.1 --port 3000',
+    command: `npm run ${productionServer ? 'start' : 'dev'} -- --hostname 127.0.0.1 --port 3000`,
     url: 'http://127.0.0.1:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env.CI && !productionServer,
     timeout: 90_000,
   },
 });
