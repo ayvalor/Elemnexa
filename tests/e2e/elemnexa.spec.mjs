@@ -4,6 +4,8 @@ test('Elemnexa identity, keyboard search, view switch, discovery, and navigation
   await page.goto('/');
   await expect(page).toHaveTitle('Elemnexa — Explore elements. Understand chemistry.');
   await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
+  const origin = process.env.SITE_URL || 'https://elemnexa.com';
+  await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', `${new URL(origin).origin}/`);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Carbon');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
@@ -34,7 +36,13 @@ test('brand assets, manifest, robots, and friendly missing page are served', asy
   const data = await manifest.json();
   expect(data.name).toBe('Elemnexa');
   for (const icon of data.icons) expect((await request.get(icon.src)).ok()).toBe(true);
-  expect((await request.get('/robots.txt')).ok()).toBe(true);
+  const origin = new URL(process.env.SITE_URL || 'https://elemnexa.com').origin;
+  const robots = await request.get('/robots.txt');
+  expect(robots.ok()).toBe(true);
+  expect(await robots.text()).toContain(`Sitemap: ${origin}/sitemap.xml`);
+  const sitemap = await request.get('/sitemap.xml');
+  expect(sitemap.ok()).toBe(true);
+  expect(await sitemap.text()).toContain(`<loc>${origin}</loc>`);
   expect((await request.get('/opengraph-image.png')).ok()).toBe(true);
   await page.goto('/undiscovered-page');
   await expect(page.getByRole('heading', { name: 'An undiscovered corner.' })).toBeVisible();

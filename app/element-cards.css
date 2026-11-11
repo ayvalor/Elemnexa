@@ -81,7 +81,7 @@
 @media print {
   .periodic-explorer .element-card.element-tile, .periodic-explorer .element-preview { box-shadow: none; background: #fff; break-inside: avoid; }
 }
-.explorer-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.explorer-actions { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .view-switch { display: flex; border: 1px solid var(--line); border-radius: 9px; padding: 3px; gap: 2px; }
 .view-switch button { display: grid; place-items: center; min-width: 38px; min-height: 38px; border-radius: 6px; color: var(--muted); }
 .view-switch button:hover, .view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }

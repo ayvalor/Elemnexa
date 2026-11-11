@@ -58,7 +58,7 @@ export default function PeriodicTable({ onElementClick }) {
     <div className="periodic-explorer flex w-full min-w-0 flex-col gap-5" data-view={view}>
       <div className="glass-panel flex w-full flex-col gap-4 rounded-2xl p-4 sm:p-5 no-print">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-          <div className="relative w-full sm:max-w-lg">
+          <div className="relative w-full min-w-0 sm:max-w-lg sm:flex-1">
             <label htmlFor="element-search" className="sr-only">Search elements by name, symbol, or atomic number</label>
             <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
             <input ref={searchRef} id="element-search" type="search" autoComplete="off" placeholder="Search name, symbol, or atomic number…" value={search} onChange={event => setSearch(event.target.value)} className="glass-input min-h-11 w-full rounded-xl py-2.5 pl-10 pr-12 text-sm" />

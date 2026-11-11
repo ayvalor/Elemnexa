@@ -8,7 +8,7 @@ A colorful, accessible chemistry learning platform built with Next.js and React.
 
 ## Development
 
-Use Node.js 24 LTS (Node >=22.13 is supported) and npm. No database or API keys are required. Set the optional `SITE_URL` build variable to your public origin when deploying (see `.env.example`).
+Use Node.js 24 LTS (Node >=22.13 is supported) and npm. No database or API keys are required. The production origin defaults to `https://elemnexa.com`; override it with the `SITE_URL` build variable if needed (see `.env.example`).
 
 ```sh
 npm ci
@@ -71,12 +71,22 @@ See [the repair and validation notes](docs/REPAIR-NOTES.md). Keep the lockfile c
 ## Production deployment
 
 1. Use Node.js 24 LTS and run `npm ci`.
-2. Set `SITE_URL` to the actual public origin (for example, `https://your-domain.com`), then run `npm run check`.
+2. Set `SITE_URL=https://elemnexa.com`, then run `npm run check`.
 3. Run the browser suite against `npm run start`, as shown above. Serve the application over HTTPS using a Next.js-compatible platform or reverse proxy.
-4. Confirm the canonical URL, social image, `/robots.txt`, `/sitemap.xml`, security headers, and icons on the deployed host. Without `SITE_URL`, canonical URLs and sitemap entries are deliberately omitted.
+4. Confirm the canonical URL, social image, `/robots.txt`, `/sitemap.xml`, security headers, and icons on the deployed host. If `SITE_URL` is unset, metadata and the sitemap use the confirmed `https://elemnexa.com` origin.
 
 Source links continue to use the existing [GitHub repository](https://github.com/ayvalor/Rasayan-Lab). The application and package are branded Elemnexa; changing the GitHub repository slug or production hostname is a separate hosting operation. If the repository is renamed, update its clone URL, remote, and source links after GitHub confirms the new address.
 
 The scoped `minimatch` override patches GHSA-g3hv-75wg-m249 in the development-only TypeScript ESLint dependency tree. It retains the API used by the parser; lint and build checks cover the updated toolchain. Remove it once the upstream parser requires a patched release. Run `npm audit` regularly; a clean audit is a point-in-time dependency check, not a security guarantee.
 
 See [the Elemnexa release notes](docs/ELEMNEXA-RELEASE.md) for the validation record and deployment limitations.
+
+## Vercel hosting and Wix domain
+
+1. Import this GitHub repository into Vercel and use the detected **Next.js** framework preset, Node.js **24.x**, and the repository root. The normal build command is `npm run build`; no custom output directory is required.
+2. Add `SITE_URL=https://elemnexa.com` in Vercel → Project → Settings → Environment Variables for Production, then redeploy after changing it. The application uses this origin for its canonical URL, Open Graph URL/image, Twitter image, robots sitemap link, and sitemap entries.
+3. Add `elemnexa.com` and optionally `www.elemnexa.com` under Vercel → Settings → Domains. Choose the apex domain as primary and redirect `www` to it in Vercel.
+4. In Wix DNS settings, enter the **exact records Vercel displays for this project**. Keep Wix as the registrar; preserve unrelated mail and verification records. Do not assume a universal Vercel IP or CNAME target.
+5. Wait for Vercel domain verification and HTTPS provisioning. Confirm the live canonical tag points to `https://elemnexa.com/`, and check `/sitemap.xml`, `/robots.txt`, social previews, and mobile behavior. Submit `https://elemnexa.com/sitemap.xml` to your search-engine webmaster account when ready.
+
+These instructions prepare the project for hosting. Domain purchase, DNS changes, Vercel import, deployment, and search-console submission have not been performed by this change.
