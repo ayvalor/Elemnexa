@@ -11,8 +11,8 @@ export const metadata = {
   ...(siteUrl ? { metadataBase: new URL(siteUrl), alternates: { canonical: "/" } } : {}),
   keywords: ["periodic table", "chemistry", "elements", "equation balancer", "molar mass calculator", "chemistry worksheets", "Elemnexa"],
   authors: [{ name: "ayvalor", url: "https://github.com/ayvalor" }],
-  openGraph: { title: "Elemnexa — A little curiosity. An elemental discovery.", description: siteDescription, siteName: "Elemnexa", type: "website", locale: "en_US", ...(siteUrl ? { url: siteUrl, images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "Elemnexa — Explore elements. Understand chemistry." }] } : {}) },
-  twitter: { card: "summary_large_image", title: "Elemnexa", description: siteDescription, ...(siteUrl ? { images: [`${siteUrl}/opengraph-image.png`] } : {}) },
+  openGraph: { title: "Elemnexa — A little curiosity. An elemental discovery.", description: siteDescription, siteName: "Elemnexa", type: "website", locale: "en_US", ...(siteUrl ? { url: siteUrl, images: [{ url: "/elemnexa-social.png", width: 1200, height: 630, alt: "Elemnexa's teal–violet E logo. Explore elements. Understand chemistry." }] } : {}) },
+  twitter: { card: "summary_large_image", title: "Elemnexa", description: siteDescription, ...(siteUrl ? { images: [`${siteUrl}/elemnexa-social.png`] } : {}) },
   robots: { index: true, follow: true },
 };
 export const viewport = { width: "device-width", initialScale: 1, themeColor: [
