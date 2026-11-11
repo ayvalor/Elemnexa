@@ -95,7 +95,7 @@ test('element tiles retain readable, unclipped identities and hero cards open de
     const symbol = card.locator('.element-symbol, .element-preview-symbol');
     expect(await symbol.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(20);
   }
-  const feature = page.getByRole('button', { name: 'Explore Carbon', exact: true });
+  const feature = page.getByRole('button', { name: /Explore.*Carbon/ });
   await feature.click();
   await expect(page.getByRole('dialog', { name: 'Carbon', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');

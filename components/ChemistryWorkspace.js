@@ -5,7 +5,6 @@ import AtomShowcase from "./AtomShowcase";
 import "./atom-showcase.css";
 import { elementsData } from "../data/elements";
 import { Play, Calculator, RefreshCw, Table2, ShieldAlert, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 import { balanceEquation, calculateMolarMass, getSolubility, cationsList, anionsList, ionLabels } from "../lib/chemistry.mjs";
 
@@ -122,7 +121,7 @@ export default function ChemistryWorkspace() {
                 {balanceResult.success ? (
                   <>
                     <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex flex-col gap-1.5 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Balanced Equation</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Balanced Equation</span>
                       <span className="text-lg sm:text-xl break-words font-extrabold text-slate-950 dark:text-white tracking-wide font-mono">
                         {balanceResult.balancedEquation}
                       </span>
@@ -307,7 +306,7 @@ export default function ChemistryWorkspace() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-3.5 h-3.5 rounded bg-rose-500/20 border border-rose-500/40 block" />
-                  <span className="text-rose-700 dark:text-rose-300">Insoluble</span>
+                  <span className="text-rose-800 dark:text-rose-300">Insoluble</span>
                 </div>
               </div>
             </div>
@@ -335,7 +334,7 @@ export default function ChemistryWorkspace() {
                         if (sol.status === "Soluble") {
                           cellBg = "bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 shadow-[inset_0_0_12px_rgba(16,185,129,0.05)] hover:bg-emerald-500/20";
                         } else if (sol.status === "Insoluble") {
-                          cellBg = "bg-rose-500/10 border border-rose-500/25 text-rose-700 dark:text-rose-300 shadow-[inset_0_0_12px_rgba(244,63,94,0.05)] hover:bg-rose-500/20";
+                          cellBg = "bg-rose-500/10 border border-rose-500/25 text-rose-800 dark:text-rose-300 shadow-[inset_0_0_12px_rgba(244,63,94,0.05)] hover:bg-rose-500/20";
                         } else {
                           cellBg = "bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-300 shadow-[inset_0_0_12px_rgba(245,158,11,0.05)] hover:bg-amber-500/20";
                         }
@@ -360,14 +359,10 @@ export default function ChemistryWorkspace() {
             </div>
 
             {/* Solubility Rule Tooltip Popover */}
-            <AnimatePresence>
+            <>
               {selectedSolubility && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                  transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.6 }}
-                  className="glass-panel p-6 rounded-3xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-slate-900/60 shadow-2xl relative mt-4 text-slate-800 dark:text-white max-w-xl mx-auto flex flex-col gap-2 transition-premium"
+                <div
+                  className="reveal-panel glass-panel p-6 rounded-3xl border border-black/10 dark:border-white/15 bg-white/80 dark:bg-slate-900/60 shadow-2xl relative mt-4 text-slate-800 dark:text-white max-w-xl mx-auto flex flex-col gap-2 transition-premium"
                 >
                   <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-3">
                     <span className="text-sm md:text-base font-extrabold text-slate-900 dark:text-white">
@@ -385,7 +380,7 @@ export default function ChemistryWorkspace() {
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     <div className={`text-xs px-3.5 py-1.5 rounded-full border leading-none font-black tracking-wide ${
                       selectedSolubility.status === "Soluble" ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30" :
-                      selectedSolubility.status === "Insoluble" ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                      selectedSolubility.status === "Insoluble" ? "bg-rose-500/20 text-rose-800 dark:text-rose-300 border-rose-500/30" :
                       "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30"
                     }`}>
                       {selectedSolubility.status}
@@ -396,9 +391,9 @@ export default function ChemistryWorkspace() {
                   <p className="text-xs md:text-sm text-slate-800 dark:text-zinc-200 mt-3 leading-relaxed italic bg-black/5 dark:bg-black/25 p-4 rounded-xl border border-black/5 dark:border-white/5">
                     {selectedSolubility.rule}
                   </p>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </>
           </div>
         )}
 

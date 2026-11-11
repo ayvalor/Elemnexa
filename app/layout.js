@@ -1,17 +1,25 @@
 import "@fontsource-variable/inter";
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/geist-mono";
+import { siteUrl, siteDescription } from "../lib/site-config.mjs";
 import "./globals.css";
 
 export const metadata = {
-  title: "Rasayan Lab | Interactive Periodic Table & Chemistry Tools",
-  description: "Explore all 118 elements, balance chemical equations, calculate molar mass, and create chemistry practice worksheets in an accessible, interactive lab.",
+  title: { default: "Elemnexa — Explore elements. Understand chemistry.", template: "%s | Elemnexa" },
+  description: siteDescription,
+  applicationName: "Elemnexa",
+  ...(siteUrl ? { metadataBase: new URL(siteUrl), alternates: { canonical: "/" } } : {}),
+  keywords: ["periodic table", "chemistry", "elements", "equation balancer", "molar mass calculator", "chemistry worksheets", "Elemnexa"],
+  authors: [{ name: "ayvalor", url: "https://github.com/ayvalor" }],
+  openGraph: { title: "Elemnexa — A little curiosity. An elemental discovery.", description: siteDescription, siteName: "Elemnexa", type: "website", locale: "en_US", ...(siteUrl ? { url: siteUrl, images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "Elemnexa — Explore elements. Understand chemistry." }] } : {}) },
+  twitter: { card: "summary_large_image", title: "Elemnexa", description: siteDescription, ...(siteUrl ? { images: [`${siteUrl}/opengraph-image.png`] } : {}) },
+  robots: { index: true, follow: true },
 };
 export const viewport = { width: "device-width", initialScale: 1, themeColor: [
-  { media: "(prefers-color-scheme: light)", color: "#f4f7fb" },
-  { media: "(prefers-color-scheme: dark)", color: "#090f1e" },
+  { media: "(prefers-color-scheme: light)", color: "#f7f9f8" },
+  { media: "(prefers-color-scheme: dark)", color: "#0b1418" },
 ] };
-// A constant trusted script applies the saved theme before paint; no user input is inserted.
+// Constant, trusted content only. Preserve existing users' saved theme.
 const themeScript = `(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)})()`;
 export default function RootLayout({ children }) {
   return (

@@ -116,7 +116,7 @@ export default function WorksheetGenerator() {
             ))}
           </ol>
           <footer className="flex flex-wrap justify-between gap-3 border-t border-slate-300 dark:border-slate-600 mt-6 pt-4 text-xs text-slate-600 dark:text-slate-400">
-            <span>Rasayan Lab · Equations for study, not experiment instructions.</span>
+            <span>Elemnexa · Equations for study, not experiment instructions.</span>
             <span>Score: ______ / {questions.length}</span>
           </footer>
         </section>

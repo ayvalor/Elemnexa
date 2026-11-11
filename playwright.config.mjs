@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 const externalServer = process.env.PLAYWRIGHT_BASE_URL;
+const crossBrowser = process.env.PLAYWRIGHT_CROSS_BROWSER === '1';
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 export default defineConfig({
@@ -9,6 +10,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 10_000 },
   retries: process.env.CI ? 1 : 0,
+  forbidOnly: !!process.env.CI,
   workers: 2,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
@@ -27,6 +29,10 @@ export default defineConfig({
     { name: 'tablet', use: { viewport: { width: 768, height: 1024 }, hasTouch: true } },
     { name: 'mobile', use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true } },
     { name: 'small-mobile', use: { viewport: { width: 320, height: 740 }, isMobile: true, hasTouch: true } },
+    ...(crossBrowser ? [
+      { name: 'firefox', use: { browserName: 'firefox', viewport: { width: 1440, height: 1000 }, launchOptions: {} } },
+      { name: 'webkit', use: { browserName: 'webkit', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, launchOptions: {} } },
+    ] : []),
   ],
   webServer: externalServer ? undefined : {
     command: 'npm run dev -- --hostname 127.0.0.1 --port 3000',

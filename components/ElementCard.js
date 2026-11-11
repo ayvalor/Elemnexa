@@ -25,16 +25,15 @@ function ElementCard({ element, onClick, matched = true }) {
       style={gridStyle}
       onClick={() => onClick(element)}
       disabled={!matched}
-      aria-label={`${element.name}, ${element.symbol}, atomic number ${element.number}`}
       aria-haspopup="dialog"
       title={`${element.name} · ${element.symbol} · Atomic number ${element.number}`}
       className="element-card element-tile"
     >
       <span className="element-tile-meta">
-        <span className="element-number">{element.number}</span>
-        <span className="element-mass">{mass}</span>
+        <span className="element-number"><span className="sr-only">Atomic number </span>{element.number} </span>
+        <span className="element-mass">{mass} </span>
       </span>
-      <span className="element-symbol">{element.symbol}</span>
+      <span className="element-symbol">{element.symbol} </span>
       <span className="element-name">{element.name}</span>
     </button>
   );

@@ -1,0 +1,43 @@
+import { test, expect } from '@playwright/test';
+
+test('Elemnexa identity, keyboard search, view switch, discovery, and navigation', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle('Elemnexa — Explore elements. Understand chemistry.');
+  await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
+  const search = page.getByRole('searchbox', { name: /Search elements/ });
+  await search.fill('Carbon');
+  await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
+  await page.getByRole('button', { name: 'Clear search', exact: true }).click();
+  await expect(search).toBeFocused();
+  await page.locator('h1').click();
+  await page.keyboard.press('/');
+  await expect(search).toBeFocused();
+  await page.getByRole('button', { name: 'Element cards view' }).click();
+  await expect(page.locator('.element-preview:visible')).toHaveCount(118);
+  await search.fill('Ne');
+  await page.getByRole('button', { name: 'Periodic table view' }).click();
+  await expect(page.locator('.element-preview:visible')).toHaveCount(0);
+  await expect(page.locator('.element-card:visible')).toHaveCount(118);
+  await expect(search).toHaveValue('Ne');
+  await page.getByRole('button', { name: 'Surprise me' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Surprise me' })).toBeFocused();
+  await page.getByRole('button', { name: 'Open the lab', exact: true }).click();
+  await expect(page.getByRole('tab', { name: 'Chemistry Suite', exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('textbox', { name: 'Chemical equation' })).toBeVisible();
+});
+
+test('brand assets, manifest, robots, and friendly missing page are served', async ({ page, request }) => {
+  const manifest = await request.get('/manifest.webmanifest');
+  expect(manifest.ok()).toBe(true);
+  const data = await manifest.json();
+  expect(data.name).toBe('Elemnexa');
+  for (const icon of data.icons) expect((await request.get(icon.src)).ok()).toBe(true);
+  expect((await request.get('/robots.txt')).ok()).toBe(true);
+  expect((await request.get('/opengraph-image.png')).ok()).toBe(true);
+  await page.goto('/undiscovered-page');
+  await expect(page.getByRole('heading', { name: 'An undiscovered corner.' })).toBeVisible();
+  await page.getByRole('link', { name: 'Explore the elements' }).click();
+  await expect(page.locator('.brand-title')).toHaveText('Elemnexa');
+});

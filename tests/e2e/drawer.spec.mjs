@@ -5,7 +5,7 @@ test('enriched details show scientific qualifications and readable history on mo
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
-  await page.getByRole('button', { name: 'Oganesson, Og, atomic number 118', exact: true }).click();
+  await page.getByRole('button', { name: /Atomic number 118\b.*Oganesson/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Oganesson', exact: true });
   const tabs = dialog.getByRole('tablist', { name: 'Element details' });
   const panel = dialog.getByRole('tabpanel');
@@ -28,7 +28,7 @@ test('element detail tabs fit and reference notes scroll with the content', asyn
   const search = page.getByRole('searchbox', { name: /Search elements/ });
   await search.fill('Oganesson');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
-  await page.getByRole('button', { name: 'Oganesson, Og, atomic number 118', exact: true }).click();
+  await page.getByRole('button', { name: /Atomic number 118\b.*Oganesson/ }).click();
   const dialog = page.getByRole('dialog', { name: 'Oganesson', exact: true });
   const tabs = dialog.getByRole('tablist', { name: 'Element details' });
   const tabMeasurements = await tabs.getByRole('tab').evaluateAll(nodes => nodes.map(node => {

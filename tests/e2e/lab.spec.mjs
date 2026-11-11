@@ -41,7 +41,7 @@ test('all elements render; searching, filters, and empty state work', async ({ p
   await search.fill(' oganesson ');
   await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
   await expect(elementButtons(page)).toHaveCount(1);
-  await expect(elementButtons(page)).toHaveAccessibleName('Oganesson, Og, atomic number 118');
+  await expect(elementButtons(page)).toHaveAccessibleName(/Atomic number 118\b.*Oganesson/);
   await search.fill('not-an-element');
   await expect(page.getByRole('heading', { name: 'No matching elements' })).toBeVisible();
   await expect(elementButtons(page)).toHaveCount(0);
@@ -102,7 +102,7 @@ test('keyboard tabs and modal focus remain usable, including animated close', as
   await expect(page.getByRole('tab', { name: 'Chemistry Suite', exact: true })).toBeFocused();
   await expect(page.getByRole('tab', { name: 'Chemistry Suite', exact: true })).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('Home');
-  const hydrogen = page.getByRole('button', { name: 'Hydrogen, H, atomic number 1', exact: true });
+  const hydrogen = page.getByRole('button', { name: /Atomic number 1\b.*Hydrogen/ });
   await hydrogen.focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Hydrogen', exact: true });
