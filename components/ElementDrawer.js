@@ -43,12 +43,12 @@ const validSourceUrl = (url) => {
   catch { return false; }
 };
 
-export default function ElementDrawer({ element, onClose }) {
+export default function ElementDrawer({ element, onClose, scrollbarWidth }) {
   const profile = element && elementsData.find(item => item.number === element.number);
-  return profile ? <DrawerContent key={profile.number} element={profile} onClose={onClose} /> : null;
+  return profile ? <DrawerContent key={profile.number} element={profile} onClose={onClose} scrollbarWidth={scrollbarWidth} /> : null;
 }
 
-function DrawerContent({ element, onClose }) {
+function DrawerContent({ element, onClose, scrollbarWidth }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [showMnemonic, setShowMnemonic] = useState(false);
 
@@ -61,9 +61,8 @@ function DrawerContent({ element, onClose }) {
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
     const previousPadding = document.body.style.paddingRight;
-    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
-    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+    if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
     // Mark background siblings inert while keeping the whole drawer interactive.
     const siblings = [];
     let current = overlayRef.current;
@@ -102,7 +101,7 @@ function DrawerContent({ element, onClose }) {
       document.body.style.paddingRight = previousPadding;
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, [onClose, scrollbarWidth]);
 
   const bgGradient = getCategoryColor(element.category);
   const references = [...new Map([

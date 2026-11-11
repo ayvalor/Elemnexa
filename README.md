@@ -44,6 +44,8 @@ CI builds once and shares that artifact across three parallel test shards. Each 
 
 A managed environment with an existing Chromium installation can set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium`. The default Chromium suite covers desktop (1440px), tablet (768px), the reviewed 776×751 layout, mobile (390px), and small mobile (320px), including keyboard controls, saved themes, calculations, print layouts, view switching, brand assets, empty states, and page overflow. Axe checks WCAG 2.2 AA rules in both themes across the table, cards, element details, tools, and worksheets. `npm run test:a11y` runs just those accessibility checks. `PLAYWRIGHT_CROSS_BROWSER=1` adds desktop Firefox and mobile WebKit; CI runs all three engines against a production build. Browser emulation supplements real-device testing; it does not establish compatibility with every browser or device.
 
+For repeatable element-click measurements and React render-isolation checks, see [the interaction performance report](docs/ELEMENT-INTERACTION-PERFORMANCE.md) and `npm run profile:elements`.
+
 ## Scientific scope and references
 
 - The balancer uses exact rational arithmetic and conserves atoms. It supports neutral formulas, nested parentheses/square brackets, Unicode subscripts, hydrates, and optional state suffixes. Charged species and isotope notation are rejected explicitly. Equations with multiple independent solutions need further constraints and are rejected instead of returning arbitrary coefficients.

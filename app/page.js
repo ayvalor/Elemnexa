@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import BrandMark from "../components/BrandMark";
 import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle, Sparkles, Shuffle, BookOpen } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
-const ElementDrawer = dynamic(() => import("../components/ElementDrawer"));
+import ElementDetailsProvider, { useOpenElement } from "../components/ElementDetailsProvider";
 import { elementsData } from "../data/element-index";
 
 const loading = () => <p role="status" className="glass-panel rounded-2xl p-8">Loading your workspace…</p>;
@@ -40,12 +40,15 @@ function InstagramIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none" /></svg>;
 }
 
-export default function Home() {
+export default function Page() {
+  return <ElementDetailsProvider><Home /></ElementDetailsProvider>;
+}
+
+function Home() {
   const [activeTab, setActiveTab] = useState("table");
   const [visited, setVisited] = useState(["table"]);
-  const [selectedElement, setSelectedElement] = useState(null);
+  const openElement = useOpenElement();
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
-  const closeDrawer = useCallback(() => setSelectedElement(null), []);
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
   const selectTab = (id) => {
     setActiveTab(id);
@@ -121,7 +124,7 @@ export default function Home() {
             <div className="discovery-elements">
               {[1, 6, 8].map(number => {
                 const element = elementsData[number - 1];
-                return <button type="button" key={number} className={`discovery-element discovery-element-${element.symbol}`} onClick={() => setSelectedElement(element)} aria-haspopup="dialog">
+                return <button type="button" key={number} className={`discovery-element discovery-element-${element.symbol}`} onClick={() => openElement(element)} aria-haspopup="dialog">
                   <span className="sr-only">Explore </span><span className="discovery-number">{String(number).padStart(2, '0')}<ArrowUpRight size={14} aria-hidden="true" /></span>
                   <strong>{element.symbol}</strong><span className="discovery-name">{element.name}</span><span className="discovery-mass">{element.mass.toFixed(3)} u</span>
                 </button>;
@@ -149,8 +152,8 @@ export default function Home() {
         <main id="main-content" tabIndex={-1} className="lab-main">
           {tabs.map(tab => (
             <section key={tab.id} id={`panel-${tab.id}`} role="tabpanel" aria-labelledby={`tab-${tab.id}`} hidden={activeTab !== tab.id} tabIndex={0}>
-              <div className="section-heading no-print"><div><p className="section-kicker">{tab.id === "table" ? "THE BUILDING BLOCKS OF EVERYTHING" : tab.id === "suite" ? "YOUR IDEAS, IN ACTION" : "A LITTLE PRACTICE GOES A LONG WAY"}</p><h2>{tab.title}</h2><p>{tab.description}</p></div>{tab.id === "table" && <button className="surprise-button" type="button" onClick={() => setSelectedElement(elementsData[Math.floor(Math.random() * elementsData.length)])}><Shuffle size={16} aria-hidden="true" /> Surprise me</button>}</div>
-              {visited.includes(tab.id) && (tab.id === "table" ? <PeriodicTable onElementClick={setSelectedElement} /> : tab.id === "suite" ? <ChemistryWorkspace /> : <WorksheetGenerator />)}
+              <div className="section-heading no-print"><div><p className="section-kicker">{tab.id === "table" ? "THE BUILDING BLOCKS OF EVERYTHING" : tab.id === "suite" ? "YOUR IDEAS, IN ACTION" : "A LITTLE PRACTICE GOES A LONG WAY"}</p><h2>{tab.title}</h2><p>{tab.description}</p></div>{tab.id === "table" && <button className="surprise-button" type="button" onClick={() => openElement(elementsData[Math.floor(Math.random() * elementsData.length)])}><Shuffle size={16} aria-hidden="true" /> Surprise me</button>}</div>
+              {visited.includes(tab.id) && (tab.id === "table" ? <PeriodicTable onElementClick={openElement} /> : tab.id === "suite" ? <ChemistryWorkspace /> : <WorksheetGenerator />)}
             </section>
           ))}
         </main>
@@ -173,7 +176,6 @@ export default function Home() {
           <div className="footer-bottom"><p>Designed &amp; built by <strong>ayvalor</strong></p><p>Made for learning. Open to everyone.</p></div>
           <p className="footer-note">Educational models and reference data. Element notes identify isotope values, predictions, and properties that have not been measured.</p>
         </footer>
-        {selectedElement && <ElementDrawer element={selectedElement} onClose={closeDrawer} />}
       </div>
     </>
   );

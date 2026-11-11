@@ -10,6 +10,7 @@
     "test": "node --test --test-isolation=none tests/*.test.mjs",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.mjs",
+    "profile:elements": "node scripts/profile-element-interactions.mjs",
     "check": "npm run lint && npm test && npm run build",
     "generate:data": "node scripts/generate-element-index.mjs"
   },

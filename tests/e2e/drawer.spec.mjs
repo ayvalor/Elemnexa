@@ -1,6 +1,33 @@
 import { test, expect } from '@playwright/test';
 import { gotoHome } from './helpers.mjs';
 
+test('repeated detail opens preserve explorer state, background isolation, scroll lock, and focus', async ({ page }) => {
+  await gotoHome(page);
+  const search = page.getByRole('searchbox', { name: /Search elements/ });
+  await search.fill('Carbon');
+  await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
+  const carbon = page.getByRole('button', { name: /Atomic number 6\b.*Carbon/ });
+  const originalStyles = await page.evaluate(() => ({ overflow: document.body.style.overflow, padding: document.body.style.paddingRight }));
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await carbon.click();
+    const dialog = page.getByRole('dialog', { name: 'Carbon', exact: true });
+    await expect(dialog).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Close Carbon details' })).toBeFocused();
+    await expect(page.locator('.app-shell')).toHaveJSProperty('inert', true);
+    await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+    await expect(dialog.getByRole('tab', { name: 'Overview', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await dialog.getByRole('tab', { name: 'Structure', exact: true }).click();
+    await expect(dialog.getByRole('tabpanel')).toContainText('Electron');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(carbon).toBeFocused();
+    await expect(page.locator('.app-shell')).toHaveJSProperty('inert', false);
+    await expect(search).toHaveValue('Carbon');
+    await expect(page.getByRole('status')).toHaveText('1 of 118 elements');
+    expect(await page.evaluate(() => ({ overflow: document.body.style.overflow, padding: document.body.style.paddingRight }))).toEqual(originalStyles);
+  }
+});
+
 test('enriched details show scientific qualifications and readable history on mobile', async ({ page }) => {
   await gotoHome(page);
   const search = page.getByRole('searchbox', { name: /Search elements/ });
