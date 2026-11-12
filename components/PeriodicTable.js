@@ -15,7 +15,6 @@ const getMobile = () => matchMedia("(max-width: 767px)").matches;
 const serverMobile = () => false;
 const categories = Object.entries(categoryNames);
 const phases = ["Solid", "Liquid", "Gas", "Unknown"];
-const carbon = elementsData.find(element => element.number === 6);
 const filterClass = "min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors";
 const selectedClass = "border-indigo-500/50 bg-indigo-500/15 text-indigo-700 dark:text-indigo-200";
 const idleClass = "border-slate-200 bg-white/40 text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10";
@@ -125,12 +124,6 @@ export default function PeriodicTable({ onElementClick }) {
         <div className="periodic-table-scroll-wrapper rounded-2xl" tabIndex={0} role="region" aria-label="Periodic table; scroll horizontally to see all groups">
           <div className="periodic-table-grid periodic-layout">
             {Array.from({ length: 18 }, (_, index) => <span key={`group-${index + 1}`} className="periodic-group-number" style={{ gridRowStart: 1, gridColumnStart: index + 1 }} title={`Group ${index + 1}`}>{index + 1}</span>)}
-            <div className="table-insight" style={{ gridColumn: "3 / 13", gridRow: "2 / 4" }} role="group" aria-label="How to read an element tile">
-              <div className="insight-example" aria-hidden="true"><div><span>{carbon.number}</span><span>{carbon.mass.toFixed(3)}</span></div><strong>{carbon.symbol}</strong><span>{carbon.name}</span></div>
-              <div className="insight-copy"><span className="insight-kicker">YOUR ELEMENT FIELD GUIDE</span><strong>One tile. A whole story.</strong><p>Explore 118 elements, from atomic structure to the chemistry of everyday life.</p>
-                <dl className="insight-key"><div><dt>{carbon.number}</dt><dd>Atomic number</dd></div><div><dt>{carbon.symbol}</dt><dd>Symbol</dd></div><div><dt>{carbon.mass.toFixed(3)}</dt><dd>Atomic mass</dd></div></dl>
-              </div>
-            </div>
             {elementsData.map(element => <ElementCard key={element.number} element={element} onClick={onElementClick} matched={matches.has(element.number)} />)}
             <div aria-hidden="true" style={{ gridRowStart: 9, gridColumn: "1 / 19" }} className="h-3" />
             <span className="fblock-label" style={{ gridRowStart: 10, gridColumn: "1 / 4" }}>Lanthanides</span>

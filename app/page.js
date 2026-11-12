@@ -3,7 +3,7 @@
 import { useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import BrandMark from "../components/BrandMark";
-import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle, Sparkles, Shuffle, BookOpen } from "lucide-react";
+import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle, Sparkles, Shuffle, BookOpen, CodeXml } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
 import ElementDetailsProvider, { useOpenElement } from "../components/ElementDetailsProvider";
 import { elementsData } from "../data/element-index";
@@ -102,17 +102,12 @@ function Home() {
         </header>
         <section className="intro no-print" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <p className="eyebrow"><span className="eyebrow-dot" /> YOUR CURIOSITY. MEET CHEMISTRY.</p>
             <h1 id="hero-title">A little curiosity.<br />An <span>elemental</span><br />discovery.</h1>
             <p className="intro-description">From the air you breathe to the stars above. Explore the elements that make up your world, and see chemistry come to life.</p>
             <div className="hero-actions">
               <button type="button" className="hero-action" onClick={exploreElements}>Explore the elements <ArrowRight size={17} aria-hidden="true" /></button>
               <button type="button" className="hero-secondary" onClick={() => openWorkspace("suite")}><FlaskConical size={17} aria-hidden="true" /> Open the lab</button>
             </div>
-            <dl className="intro-facts" aria-label="A world of chemistry">
-              <div><dt>Elements to discover</dt><dd>118</dd></div>
-              <div><dt>Reasons to be curious</dt><dd><span aria-hidden="true">∞</span><span className="sr-only">Endless</span></dd></div>
-            </dl>
           </div>
           <div className="hero-discovery" aria-label="Featured elements">
             <div className="discovery-grid" aria-hidden="true" />
@@ -123,17 +118,15 @@ function Home() {
               <circle cx="91" cy="140" r="8" className="orbit-dot" />
               <circle cx="428" cy="266" r="6" className="orbit-dot violet" />
             </svg>
-            <span className="discovery-kicker"><Sparkles size={14} aria-hidden="true" /> SMALL ELEMENTS. ENDLESS POSSIBILITIES.</span>
             <div className="discovery-elements">
               {[1, 6, 8].map(number => {
                 const element = elementsData[number - 1];
                 return <button type="button" key={number} className={`discovery-element discovery-element-${element.symbol}`} onClick={() => openElement(element)} aria-haspopup="dialog">
-                  <span className="sr-only">Explore </span><span className="discovery-number">{String(number).padStart(2, '0')}<ArrowUpRight size={14} aria-hidden="true" /></span>
+                  <span className="sr-only">Explore </span><span className="discovery-number"><span>{String(number).padStart(2, '0')}</span><ArrowUpRight size={16} aria-hidden="true" /></span>
                   <strong>{element.symbol}</strong><span className="discovery-name">{element.name}</span><span className="discovery-mass">{element.mass.toFixed(3)} u</span>
                 </button>;
               })}
             </div>
-            <span className="discovery-caption">CLICK AN ELEMENT TO MAKE A DISCOVERY <ArrowUpRight size={13} aria-hidden="true" /></span>
           </div>
         </section>
         <div className="learning-strip no-print">
@@ -154,24 +147,22 @@ function Home() {
         <main id="main-content" tabIndex={-1} className="lab-main">
           {tabs.map(tab => (
             <section key={tab.id} id={`panel-${tab.id}`} role="tabpanel" aria-labelledby={`tab-${tab.id}`} hidden={activeTab !== tab.id} tabIndex={0}>
-              <div className="section-heading no-print"><div><p className="section-kicker">{tab.id === "table" ? "THE BUILDING BLOCKS OF EVERYTHING" : tab.id === "suite" ? "YOUR IDEAS, IN ACTION" : "A LITTLE PRACTICE GOES A LONG WAY"}</p><h2>{tab.title}</h2><p>{tab.description}</p></div>{tab.id === "table" && <button className="surprise-button" type="button" onClick={() => openElement(elementsData[Math.floor(Math.random() * elementsData.length)])}><Shuffle size={16} aria-hidden="true" /> Surprise me</button>}</div>
+              <div className="section-heading no-print"><div>{tab.id !== "table" && <p className="section-kicker">{tab.id === "suite" ? "YOUR IDEAS, IN ACTION" : "A LITTLE PRACTICE GOES A LONG WAY"}</p>}<h2>{tab.title}</h2><p>{tab.description}</p></div>{tab.id === "table" && <button className="surprise-button" type="button" onClick={() => openElement(elementsData[Math.floor(Math.random() * elementsData.length)])}><Shuffle size={16} aria-hidden="true" /> Surprise me</button>}</div>
               {visited.includes(tab.id) && (tab.id === "table" ? <PeriodicTable onElementClick={openElement} /> : tab.id === "suite" ? <ChemistryWorkspace /> : <WorksheetGenerator />)}
             </section>
           ))}
         </main>
         <footer className="site-footer no-print">
-          <div className="footer-top">
-            <nav className="footer-links" aria-label="Explore and connect">
-              <button type="button" onClick={exploreElements}>Explore elements</button>
-              <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
-            </nav>
-          </div>
           <div className="footer-connect">
-            <div><strong>A thought, a question, a little feedback?</strong><p>Send it to @ayvalor on Instagram.</p></div>
-            <div className="footer-social-links">
-              <a className="instagram-link" href="https://www.instagram.com/ayvalor/" target="_blank" rel="noopener noreferrer" aria-label="@ayvalor on Instagram (opens in a new tab)"><InstagramIcon /><span>@ayvalor</span><ArrowUpRight size={14} aria-hidden="true" /></a>
-              <a className="feedback-link" href="https://ig.me/m/ayvalor" target="_blank" rel="noopener noreferrer" aria-label="Send feedback via Instagram DM (opens in a new tab)"><MessageCircle size={17} aria-hidden="true" /><span>Send feedback</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+            <div className="footer-connect-copy">
+              <span className="footer-connect-icon" aria-hidden="true"><MessageCircle size={24} /></span>
+              <div><strong>A thought, a question, a little feedback?</strong><p>Send it to @ayvalor on Instagram.</p></div>
             </div>
+            <nav className="footer-social-links" aria-label="Connect and source">
+              <a className="instagram-link" href="https://www.instagram.com/ayvalor/" target="_blank" rel="noopener noreferrer" aria-label="@ayvalor on Instagram (opens in a new tab)"><InstagramIcon /><span>@ayvalor</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+              <a className="source-link" href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer"><CodeXml size={18} aria-hidden="true" /><span>View source</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+              <a className="feedback-link" href="https://ig.me/m/ayvalor" target="_blank" rel="noopener noreferrer" aria-label="Send feedback via Instagram DM (opens in a new tab)"><MessageCircle size={17} aria-hidden="true" /><span>Send feedback</span><ArrowUpRight size={14} aria-hidden="true" /></a>
+            </nav>
             <p className="footer-dm-note">Opens Instagram messages. You may need to sign in.</p>
           </div>
           <div className="footer-bottom"><p>Designed &amp; built by <strong>ayvalor</strong></p><p>Made for learning. Open to everyone.</p></div>
