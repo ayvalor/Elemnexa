@@ -15,6 +15,7 @@ const getMobile = () => matchMedia("(max-width: 767px)").matches;
 const serverMobile = () => false;
 const categories = Object.entries(categoryNames);
 const phases = ["Solid", "Liquid", "Gas", "Unknown"];
+const carbon = elementsData.find(element => element.number === 6);
 const filterClass = "min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors";
 const selectedClass = "border-indigo-500/50 bg-indigo-500/15 text-indigo-700 dark:text-indigo-200";
 const idleClass = "border-slate-200 bg-white/40 text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10";
@@ -55,7 +56,7 @@ export default function PeriodicTable({ onElementClick }) {
   const reset = () => { setSearch(""); setCategory(""); setBlock(""); setPhase(""); setSyntheticOnly(false); };
 
   return (
-    <div className="periodic-explorer flex w-full min-w-0 flex-col gap-5" data-view={view}>
+    <div className="periodic-explorer flex w-full min-w-0 flex-col gap-5" data-view={view} data-synthetic-only={syntheticOnly}>
       <div className="glass-panel flex w-full flex-col gap-4 rounded-2xl p-4 sm:p-5 no-print">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div className="relative w-full min-w-0 sm:max-w-lg sm:flex-1">
@@ -102,9 +103,9 @@ export default function PeriodicTable({ onElementClick }) {
                   <button type="button" key={value} aria-pressed={phase === value} onClick={() => setPhase(phase === value ? "" : value)} className={`${filterClass} ${phase === value ? selectedClass : idleClass}`}>{value}</button>
                 ))}</div>
               </fieldset>
-              <label className="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
-                <input type="checkbox" checked={syntheticOnly} onChange={event => setSyntheticOnly(event.target.checked)} className="h-4 w-4 accent-indigo-600" /> Synthetic elements only
-              </label>
+              <button type="button" role="switch" aria-checked={syntheticOnly} className="synthetic-toggle" onClick={() => setSyntheticOnly(value => !value)}>
+                <span>Synthetic elements only</span><span className="synthetic-toggle-track" aria-hidden="true"><span /></span>
+              </button>
               {hasFilters && <button type="button" onClick={reset} className="glass-btn flex min-h-10 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-700 dark:text-rose-300"><RotateCcw aria-hidden="true" className="h-4 w-4" />Reset filters</button>}
             </div>
           </div>
@@ -124,8 +125,11 @@ export default function PeriodicTable({ onElementClick }) {
         <div className="periodic-table-scroll-wrapper rounded-2xl" tabIndex={0} role="region" aria-label="Periodic table; scroll horizontally to see all groups">
           <div className="periodic-table-grid periodic-layout">
             {Array.from({ length: 18 }, (_, index) => <span key={`group-${index + 1}`} className="periodic-group-number" style={{ gridRowStart: 1, gridColumnStart: index + 1 }} title={`Group ${index + 1}`}>{index + 1}</span>)}
-            <div className="table-insight" style={{ gridColumn: "3 / 13", gridRow: "2 / 4" }}>
-              <span className="insight-symbol" aria-hidden="true">118</span><div><strong>A world of possibility.</strong><p>Every tile tells a story. Select an element to explore its properties, electrons, and origins.</p><span>ATOMIC NUMBER · SYMBOL · ATOMIC WEIGHT</span></div>
+            <div className="table-insight" style={{ gridColumn: "3 / 13", gridRow: "2 / 4" }} role="group" aria-label="How to read an element tile">
+              <div className="insight-example" aria-hidden="true"><div><span>{carbon.number}</span><span>{carbon.mass.toFixed(3)}</span></div><strong>{carbon.symbol}</strong><span>{carbon.name}</span></div>
+              <div className="insight-copy"><span className="insight-kicker">YOUR ELEMENT FIELD GUIDE</span><strong>One tile. A whole story.</strong><p>Explore 118 elements, from atomic structure to the chemistry of everyday life.</p>
+                <dl className="insight-key"><div><dt>{carbon.number}</dt><dd>Atomic number</dd></div><div><dt>{carbon.symbol}</dt><dd>Symbol</dd></div><div><dt>{carbon.mass.toFixed(3)}</dt><dd>Atomic mass</dd></div></dl>
+              </div>
             </div>
             {elementsData.map(element => <ElementCard key={element.number} element={element} onClick={onElementClick} matched={matches.has(element.number)} />)}
             <div aria-hidden="true" style={{ gridRowStart: 9, gridColumn: "1 / 19" }} className="h-3" />

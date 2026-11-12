@@ -43,6 +43,7 @@
 .dark .periodic-explorer .element-card .element-name { color: #cbd5e1; }
 .dark .periodic-explorer .element-card .element-mass { color: #a5b4c9; }
 .periodic-explorer .element-card.element-tile:disabled { opacity: .2; cursor: default; box-shadow: none; }
+.periodic-explorer[data-synthetic-only="true"] .element-card.element-tile:disabled { visibility: hidden; }
 .periodic-explorer .element-card.element-tile:focus-visible, .periodic-explorer .element-preview:focus-visible { outline: 3px solid var(--card-category-color); outline-offset: 3px; z-index: 2; }
 .periodic-explorer .element-preview-grid { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .periodic-explorer .element-preview {
@@ -105,11 +106,25 @@
 .view-switch button:hover, .view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
 .search-clear { position: absolute; right: 2px; top: 0; display: grid; place-items: center; width: 44px; height: 44px; color: var(--muted); }
 .search-shortcut { position: absolute; right: 12px; top: 10px; border: 1px solid var(--line); padding: 1px 7px; border-radius: 4px; color: var(--muted); font-size: .75rem; }
-.table-insight { display: flex; gap: 1.4rem; align-items: center; padding: 1rem 3rem; }
-.insight-symbol { font: 700 4.2rem var(--font-display); color: var(--accent); letter-spacing: -.08em; opacity: .8; }
-.table-insight strong { font: 650 1.1rem var(--font-display); letter-spacing: -.03em; }
-.table-insight p { max-width: 23rem; font-size: .7rem; color: var(--muted); line-height: 1.7; margin-top: .4rem; }
-.table-insight div > span { display: block; font-size: .48rem; letter-spacing: .08em; color: var(--accent); margin-top: .7rem; }
+.synthetic-toggle { display: inline-flex; align-items: center; justify-content: space-between; gap: .85rem; min-height: 44px; padding: .5rem .7rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--foreground); font-size: .7rem; font-weight: 600; }
+.synthetic-toggle:hover { border-color: var(--accent); }
+.synthetic-toggle[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.synthetic-toggle-track { display: flex; align-items: center; flex: none; width: 42px; height: 24px; padding: 3px; border-radius: 20px; background: #647879; transition: background .2s ease; }
+.synthetic-toggle-track > span { width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px #0003; transition: transform .2s ease; }
+.synthetic-toggle[aria-checked="true"] .synthetic-toggle-track { background: #087f70; }
+.synthetic-toggle[aria-checked="true"] .synthetic-toggle-track > span { transform: translateX(18px); }
+.table-insight { display: flex; gap: 1.3rem; align-items: center; margin: .35rem .6rem .7rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(115deg, var(--accent-soft), var(--surface) 65%); }
+.insight-example { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; width: 102px; height: 130px; padding: .65rem; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 12px; background: var(--surface); color: var(--accent); }
+.insight-example > div { display: flex; justify-content: space-between; width: 100%; font: 500 .6rem var(--font-mono); }
+.insight-example strong { font: 750 3.1rem/1 var(--font-display); letter-spacing: -.05em; }
+.insight-example > span { font-size: .65rem; font-weight: 600; }
+.insight-copy { min-width: 0; }
+.insight-kicker { display: block; margin-bottom: .4rem; font-size: .5rem; font-weight: 700; letter-spacing: .12em; color: var(--accent); }
+.insight-copy > strong { font: 700 1.25rem/1.25 var(--font-display); letter-spacing: -.04em; color: var(--foreground); }
+.insight-copy > p { max-width: 24rem; font-size: .68rem; color: var(--muted); line-height: 1.6; margin-top: .4rem; }
+.insight-key { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: .8rem; }
+.insight-key dt { font: 650 .75rem var(--font-mono); color: var(--accent); }
+.insight-key dd { margin-top: .15rem; font-size: .54rem; color: var(--muted); }
 .periodic-explorer[data-view="cards"] .table-view { display: none; }
 .periodic-explorer[data-view="cards"] .element-preview-grid { display: grid; }
 .periodic-explorer[data-view="table"] .table-view { display: block; }
