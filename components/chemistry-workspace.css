@@ -24,7 +24,7 @@
 .molar-guide li > span { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 9px; font: 650 .62rem var(--font-mono); background: var(--surface); color: var(--accent); }
 .molar-guide strong { display: block; font-size: .72rem; font-weight: 650; color: var(--foreground); }
 .molar-guide p { margin-top: .2rem; font-size: .64rem; line-height: 1.6; color: var(--muted); }
-.molar-results { padding-top: 1.5rem; border-top: 1px solid var(--line); }
+.molar-results { padding-top: 1.5rem; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
 .molar-total { border: 1px solid color-mix(in srgb, var(--violet) 30%, var(--line)); background: linear-gradient(120deg, var(--accent-soft), color-mix(in srgb, var(--violet) 12%, var(--surface))); }
 @media (max-width: 1050px) { .molar-form-controls { flex-direction: column; } }
 @media (max-width: 699px) {
