@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import AtomShowcase from "./AtomShowcase";
+import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import "./atom-showcase.css";
 import "./chemistry-workspace.css";
 import { elementsData } from "../data/elements";
 import { Play, Calculator, RefreshCw, Table2, ShieldAlert, X } from "lucide-react";
 
 import { balanceEquation, calculateMolarMass, getSolubility, cationsList, anionsList, ionLabels } from "../lib/chemistry.mjs";
+
+const AtomShowcase = dynamic(() => import("./AtomShowcase"), {
+  loading: () => <p role="status">Loading atom model…</p>,
+});
 
 // --- MAIN WORKSPACE COMPONENT ---
 
@@ -25,6 +29,7 @@ export default function ChemistryWorkspace() {
 
   // Solubility State
   const [selectedSolubility, setSelectedSolubility] = useState(null);
+  const selectedSolubilityRef = useRef(null);
 
   const handleBalance = (event) => {
     event.preventDefault();
@@ -225,7 +230,7 @@ export default function ChemistryWorkspace() {
                 </button>
               ))}
             </div>
-            <p id="molar-formula-help" className="molar-help">Supports brackets and hydrates, including CuSO4·5H2O. Uses reference atomic weights, or representative isotope masses where a standard atomic weight is unavailable.</p>
+            <p id="molar-formula-help" className="molar-help">Supports brackets and hydrates, including CuSO4·5H2O. Uses reference atomic weights, or representative isotope mass numbers where a standard atomic weight is unavailable.</p>
             </div>
             <aside className="molar-guide" aria-labelledby="molar-guide-title">
               <h3 id="molar-guide-title">How it adds up</h3>
@@ -237,11 +242,12 @@ export default function ChemistryWorkspace() {
                 {massResult.success ? (
                   <>
                     <div className="molar-total p-6 rounded-2xl flex flex-col gap-1.5 text-center">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Molar Mass</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">{massResult.isApproximate ? 'Approximate Molar Mass' : 'Total Molar Mass'}</span>
                       <span className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-700 dark:from-indigo-300 dark:to-violet-400 font-sans tracking-tight">
-                        {massResult.totalMass.toFixed(4)} <span className="text-base font-bold text-slate-700 dark:text-zinc-400 font-sans">g/mol</span>
+                        {massResult.isApproximate && '≈ '}{massResult.totalMass.toFixed(4)} <span className="text-base font-bold text-slate-700 dark:text-zinc-400 font-sans">g/mol</span>
                       </span>
                     </div>
+                    {massResult.isApproximate && <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">This estimate uses representative isotope mass numbers for {massResult.breakdown.filter(row => row.massType === 'representative isotope mass number').map(row => row.symbol).join(', ')}. These are not standard atomic weights or precise isotopic masses.</p>}
 
                     <div className="flex flex-col gap-4">
                       <span className="text-[10px] uppercase font-bold text-slate-700 dark:text-zinc-400 tracking-wider">Elemental Contributions Breakdown</span>
@@ -277,7 +283,7 @@ export default function ChemistryWorkspace() {
 
                               <div className="flex justify-between text-[10px] text-slate-700 dark:text-zinc-400 font-mono mt-1 pt-2 border-t border-black/5 dark:border-white/5">
                                 <span>Quantity: <strong className="text-slate-950 dark:text-white">{row.qty}</strong></span>
-                                <span>At. Mass: <strong className="text-slate-950 dark:text-white">{row.atomicMass.toFixed(3)}</strong></span>
+                                <span>{row.massType === 'representative isotope mass number' ? 'Isotope mass number: ' : 'At. Mass: '}<strong className="text-slate-950 dark:text-white">{row.massType === 'representative isotope mass number' ? `[${row.massNumber}]` : row.atomicMass.toFixed(3)}</strong></span>
                                 <span>Total: <strong className={color.text}>{row.contribution.toFixed(3)} g/mol</strong></span>
                               </div>
                             </div>
@@ -362,7 +368,7 @@ export default function ChemistryWorkspace() {
                               isSelected ? "ring-2 ring-indigo-500 ring-inset" : ""
                             }`}
                           >
-                            <button type="button" className="w-full min-h-10 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500" aria-label={`${ionLabels[cat]} and ${ionLabels[an]}: ${sol.status}`} aria-pressed={Boolean(isSelected)} onClick={() => setSelectedSolubility({ cation: cat, anion: an, ...sol })}>
+                            <button ref={isSelected ? selectedSolubilityRef : null} type="button" className="w-full min-h-10 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500" aria-label={`${ionLabels[cat]} and ${ionLabels[an]}: ${sol.status}`} aria-pressed={Boolean(isSelected)} onClick={() => setSelectedSolubility({ cation: cat, anion: an, ...sol })}>
                               {sol.status === "Slightly Soluble" ? "SS" : sol.status[0]}
                             </button>
                           </td>
@@ -386,7 +392,7 @@ export default function ChemistryWorkspace() {
                     </span>
                     <button
                       aria-label="Close solubility details"
-                      onClick={() => setSelectedSolubility(null)}
+                      onClick={() => { setSelectedSolubility(null); selectedSolubilityRef.current?.focus(); }}
                       className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-premium"
                     >
                       <X className="w-4 h-4" />

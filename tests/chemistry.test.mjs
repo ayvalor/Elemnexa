@@ -18,12 +18,31 @@ test('rejects malformed formulas instead of silently discarding characters', () 
 });
 
 test('calculates molar mass and rejects empty/unknown/non-neutral formulas', () => {
-  assert.ok(Math.abs(calculateMolarMass('H2O').totalMass - 18.015) < 0.00001);
+  const water = calculateMolarMass('H2O');
+  assert.ok(Math.abs(water.totalMass - 18.015) < 0.00001);
+  assert.equal(water.isApproximate, false);
+  assert.ok(water.breakdown.every(row => row.massType === 'standard atomic weight' && !('massNumber' in row)));
   const hydrate = calculateMolarMass('CuSO4·5H2O');
   assert.equal(hydrate.success, true);
   assert.ok(Math.abs(hydrate.totalMass - 249.677) < 0.02);
   assert.equal(hydrate.breakdown.find(row => row.symbol === 'H').qty, 10);
   for (const formula of ['', 'H2O)', 'Xx2', 'H0', 'Na+']) assert.equal(calculateMolarMass(formula).success, false);
+});
+
+test('flags representative isotope mass-number approximations in molar results', () => {
+  for (const [formula, symbol, massNumber] of [['TcO2', 'Tc', 98], ['Og', 'Og', 294]]) {
+    const result = calculateMolarMass(formula);
+    assert.equal(result.success, true);
+    assert.equal(result.isApproximate, true);
+    const row = result.breakdown.find(item => item.symbol === symbol);
+    assert.equal(row.massType, 'representative isotope mass number');
+    assert.equal(row.massNumber, massNumber);
+    assert.equal(row.atomicMass, massNumber);
+    for (const standard of result.breakdown.filter(item => item.symbol !== symbol)) {
+      assert.equal(standard.massType, 'standard atomic weight');
+      assert.ok(!('massNumber' in standard));
+    }
+  }
 });
 
 test('balances every worksheet reaction with conserved atoms and known coefficients', () => {
