@@ -30,16 +30,19 @@ test('workspace tabs have thin borders, fit their labels and support keyboard na
   await expect(tabs.getByRole('tab', { name: 'Periodic Table' })).toHaveAttribute('aria-selected', 'true');
 });
 
-test('Instagram profile and feedback use the requested account and remain reachable on mobile', async ({ page }) => {
+test('Instagram, feedback, and source links share the connect panel and remain reachable on mobile', async ({ page }) => {
   await gotoHome(page);
   const footer = page.locator('.site-footer');
   await footer.scrollIntoViewIfNeeded();
   const profile = footer.getByRole('link', { name: '@ayvalor on Instagram (opens in a new tab)', exact: true });
   const feedback = footer.getByRole('link', { name: 'Send feedback via Instagram DM (opens in a new tab)', exact: true });
+  const source = footer.locator('.footer-connect').getByRole('link', { name: 'View source', exact: true });
   await expect(profile).toHaveAttribute('href', 'https://www.instagram.com/ayvalor/');
   await expect(feedback).toHaveAttribute('href', 'https://ig.me/m/ayvalor');
+  await expect(source).toHaveAttribute('href', 'https://github.com/ayvalor/Rasayan-Lab');
+  await expect(footer.getByRole('button', { name: 'Explore elements', exact: true })).toHaveCount(0);
   await expect(footer).toContainText('Opens Instagram messages. You may need to sign in.');
-  for (const link of [profile, feedback]) {
+  for (const link of [profile, feedback, source]) {
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute('target', '_blank');
     await expect(link).toHaveAttribute('rel', 'noopener noreferrer');

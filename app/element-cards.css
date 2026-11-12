@@ -113,18 +113,6 @@
 .synthetic-toggle-track > span { width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px #0003; transition: transform .2s ease; }
 .synthetic-toggle[aria-checked="true"] .synthetic-toggle-track { background: #087f70; }
 .synthetic-toggle[aria-checked="true"] .synthetic-toggle-track > span { transform: translateX(18px); }
-.table-insight { display: flex; gap: 1.3rem; align-items: center; margin: .35rem .6rem .7rem; padding: 1.1rem 1.3rem; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(115deg, var(--accent-soft), var(--surface) 65%); }
-.insight-example { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; width: 102px; height: 130px; padding: .65rem; border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: 12px; background: var(--surface); color: var(--accent); }
-.insight-example > div { display: flex; justify-content: space-between; width: 100%; font: 500 .6rem var(--font-mono); }
-.insight-example strong { font: 750 3.1rem/1 var(--font-display); letter-spacing: -.05em; }
-.insight-example > span { font-size: .65rem; font-weight: 600; }
-.insight-copy { min-width: 0; }
-.insight-kicker { display: block; margin-bottom: .4rem; font-size: .5rem; font-weight: 700; letter-spacing: .12em; color: var(--accent); }
-.insight-copy > strong { font: 700 1.25rem/1.25 var(--font-display); letter-spacing: -.04em; color: var(--foreground); }
-.insight-copy > p { max-width: 24rem; font-size: .68rem; color: var(--muted); line-height: 1.6; margin-top: .4rem; }
-.insight-key { display: flex; flex-wrap: wrap; gap: 1.2rem; margin-top: .8rem; }
-.insight-key dt { font: 650 .75rem var(--font-mono); color: var(--accent); }
-.insight-key dd { margin-top: .15rem; font-size: .54rem; color: var(--muted); }
 .periodic-explorer[data-view="cards"] .table-view { display: none; }
 .periodic-explorer[data-view="cards"] .element-preview-grid { display: grid; }
 .periodic-explorer[data-view="table"] .table-view { display: block; }

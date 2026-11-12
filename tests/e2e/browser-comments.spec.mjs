@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { gotoHome } from './helpers.mjs';
 import { elementsData } from '../../data/element-index.js';
 
-test('logo forms the first letter of the wordmark and removed identity blocks stay absent', async ({ page }) => {
+test('wordmark stays accessible and annotated hero copy and field guide stay removed', async ({ page }) => {
   await gotoHome(page);
   await expect(page.locator('.brand')).toHaveAccessibleName('Elemnexa — Explore elements. Understand chemistry.');
   await expect(page.locator('.brand-wordmark img')).toBeVisible();
@@ -13,8 +13,17 @@ test('logo forms the first letter of the wordmark and removed identity blocks st
   });
   expect(visibleLetters).toBe('lemnexa');
   await expect(page.locator('.discovery-note, .footer-identity, .footer-mark')).toHaveCount(0);
-  await expect(page.locator('.intro-facts')).toContainText('118');
-  await expect(page.locator('.intro-facts')).toContainText('Endless');
+  for (const copy of [
+    'YOUR CURIOSITY. MEET CHEMISTRY.',
+    'SMALL ELEMENTS. ENDLESS POSSIBILITIES.',
+    'CLICK AN ELEMENT TO MAKE A DISCOVERY',
+    'Elements to discover',
+    'Reasons to be curious',
+    'THE BUILDING BLOCKS OF EVERYTHING',
+    'One tile. A whole story.',
+  ]) await expect(page.getByText(copy, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'How to read an element tile' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Interactive Periodic Table', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
