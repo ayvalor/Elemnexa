@@ -135,7 +135,7 @@ function DrawerContent({ element, onClose, scrollbarWidth }) {
           className="drawer-panel relative z-10 flex h-dvh w-full max-w-lg flex-col border-l border-slate-200 bg-slate-50 shadow-2xl dark:border-white/10 dark:bg-slate-950 md:max-w-xl"
         >
           {/* Header Banner - Category gradient */}
-          <div className={`p-4 sm:p-6 bg-gradient-to-r ${bgGradient} shrink-0 border-b relative flex items-center justify-between gap-2`}>
+          <div className={`element-detail-header p-4 sm:p-6 bg-gradient-to-r ${bgGradient} shrink-0 border relative flex items-center justify-between gap-2`}>
             <div className="min-w-0 pr-8">
               <span className="text-[10px] uppercase font-extrabold tracking-wider bg-black/40 px-2.5 py-1 rounded-full text-white/90">
                 Atomic Number {element.number} • {element.block.toUpperCase()}-Block

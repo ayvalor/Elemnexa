@@ -1,10 +1,17 @@
+.element-detail-header {
+  margin: 1rem 1rem 0;
+  border-radius: 1rem;
+}
+
 .element-detail-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   flex-shrink: 0;
   gap: .4rem;
-  padding: .65rem .85rem;
-  border-bottom: 1px solid #dce3ee;
+  margin: .75rem 1rem 0;
+  padding: .65rem;
+  border: 1px solid #dce3ee;
+  border-radius: 1rem;
   background: #eef2f8;
 }
 
@@ -88,6 +95,10 @@
 
 @media (min-width: 480px) {
   .element-detail-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (min-width: 640px) {
+  .element-detail-header, .element-detail-tabs { margin-inline: 1.5rem; }
 }
 
 @media (max-width: 419px) {
