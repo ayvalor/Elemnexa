@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AtomShowcase from "./AtomShowcase";
 import "./atom-showcase.css";
+import "./chemistry-workspace.css";
 import { elementsData } from "../data/elements";
 import { Play, Calculator, RefreshCw, Table2, ShieldAlert, X } from "lucide-react";
 
@@ -62,7 +63,7 @@ export default function ChemistryWorkspace() {
       </div>
 
       {/* Workspace Panel */}
-      <div className="glass-panel w-full min-w-0 p-4 sm:p-6 rounded-3xl min-h-[480px] text-left">
+      <div className={`glass-panel w-full min-w-0 p-4 sm:p-6 rounded-3xl text-left ${activeSubTab === "molar" ? "molar-workspace" : "min-h-[480px]"}`}>
         
         {/* TAB 1: EQUATION BALANCER */}
         {activeSubTab === "balancer" && (
@@ -165,16 +166,23 @@ export default function ChemistryWorkspace() {
 
         {/* TAB 2: MOLAR MASS CALCULATOR */}
         {activeSubTab === "molar" && (
-          <div className="flex flex-col gap-6 max-w-2xl mx-auto">
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white">Molar Mass Breakdown Calculator</h2>
-              <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
-                Enter a neutral formula to calculate molar mass and mass percentages using reference atomic weights. Radioactive elements use representative isotope masses. Example hydrate: CuSO4·5H2O.
+          <div className="molar-calculator">
+            <div className="molar-heading">
+              <span className="molar-heading-icon"><Calculator size={25} aria-hidden="true" /></span>
+              <div><p className="molar-kicker">A LITTLE FORMULA. A CLEARER PICTURE.</p>
+              <h2>Molar Mass Calculator</h2>
+              <p className="molar-description">
+                Turn a chemical formula into a clear breakdown of its mass and elemental composition.
               </p>
+              </div>
             </div>
 
-            <form onSubmit={handleCalculateMass} className="flex flex-col md:flex-row gap-3">
+            <div className="molar-input-grid"><div className="molar-entry">
+            <form onSubmit={handleCalculateMass} className="molar-form">
+              <label htmlFor="molar-formula">Molecular formula</label>
+              <div className="molar-form-controls">
               <input
+                id="molar-formula"
                 type="text"
                 value={formulaInput}
                 aria-label="Molecular formula"
@@ -183,18 +191,20 @@ export default function ChemistryWorkspace() {
                 spellCheck={false}
                 onChange={(e) => { setFormulaInput(e.target.value); setMassResult(null); }}
                 placeholder="e.g., Al2(SO4)3"
-                className="glass-input min-w-0 flex-1 px-4 py-3 rounded-xl text-base font-semibold"
+                aria-describedby="molar-formula-help"
+                className="glass-input"
               />
               <button
                 type="submit"
-                className="glass-btn px-6 py-3 rounded-xl text-sm font-bold text-slate-900 dark:text-white shadow bg-indigo-600/20 hover:bg-indigo-600/30 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/40 border border-indigo-600/30 dark:border-indigo-500/40"
+                className="molar-submit"
               >
                 Calculate Mass
               </button>
+              </div>
             </form>
 
-            <div className="flex gap-2 justify-center flex-wrap md:justify-start">
-              <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-bold uppercase self-center mr-1">Examples:</span>
+            <div className="molar-examples" role="group" aria-label="Example formulas">
+              <span>Try a formula</span>
               {[
                 "H2O",
                 "C6H12O6",
@@ -209,18 +219,24 @@ export default function ChemistryWorkspace() {
                     setFormulaInput(ex);
                     setMassResult(calculateMolarMass(ex));
                   }}
-                  className="text-[10px] bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/10 px-2 py-1 rounded text-slate-800 dark:text-zinc-300 font-mono"
+                  className="molar-example"
                 >
                   {ex}
                 </button>
               ))}
             </div>
+            <p id="molar-formula-help" className="molar-help">Supports brackets and hydrates, including CuSO4·5H2O. Uses reference atomic weights, or representative isotope masses where a standard atomic weight is unavailable.</p>
+            </div>
+            <aside className="molar-guide" aria-labelledby="molar-guide-title">
+              <h3 id="molar-guide-title">How it adds up</h3>
+              <ol><li><span aria-hidden="true">01</span><div><strong>Count the atoms</strong><p>Read each element and its quantity.</p></div></li><li><span aria-hidden="true">02</span><div><strong>Apply atomic weights</strong><p>Multiply each weight by its atom count.</p></div></li><li><span aria-hidden="true">03</span><div><strong>See the whole picture</strong><p>Total mass and each element’s share.</p></div></li></ol>
+            </aside></div>
 
             {massResult && (
-              <div aria-live="polite" className="mt-4 flex flex-col gap-6 border-t border-black/10 dark:border-white/10 pt-6">
+              <div aria-live="polite" className="molar-results flex flex-col gap-6">
                 {massResult.success ? (
                   <>
-                    <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 rounded-2xl flex flex-col gap-1.5 text-center">
+                    <div className="molar-total p-6 rounded-2xl flex flex-col gap-1.5 text-center">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Molar Mass</span>
                       <span className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-700 dark:from-indigo-300 dark:to-violet-400 font-sans tracking-tight">
                         {massResult.totalMass.toFixed(4)} <span className="text-base font-bold text-slate-700 dark:text-zinc-400 font-sans">g/mol</span>

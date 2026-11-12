@@ -53,14 +53,12 @@ test('brand assets, manifest, robots, and friendly missing page are served', asy
   for (const link of await page.locator('link[rel="icon"], link[rel="apple-touch-icon"]').all()) {
     expect((await request.get(await link.getAttribute('href'))).ok()).toBe(true);
   }
-  for (const selector of ['.brand-mark', '.footer-mark']) {
-    const logo = page.locator(`img${selector}`);
-    await logo.scrollIntoViewIfNeeded();
-    await expect(logo).toHaveAttribute('alt', '');
-    await expect(logo).toHaveAttribute('aria-hidden', 'true');
-    await expect.poll(() => logo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
-    expect(await logo.evaluate(image => image.currentSrc)).toContain('elemnexa-mark.png');
-  }
+  const logo = page.locator('img.brand-mark');
+  await logo.scrollIntoViewIfNeeded();
+  await expect(logo).toHaveAttribute('alt', '');
+  await expect(logo).toHaveAttribute('aria-hidden', 'true');
+  await expect.poll(() => logo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  expect(await logo.evaluate(image => image.currentSrc)).toContain('elemnexa-mark.png');
   await page.goto('/undiscovered-page');
   await expect(page.getByRole('heading', { name: 'An undiscovered corner.' })).toBeVisible();
   await page.getByRole('link', { name: 'Explore the elements' }).click();

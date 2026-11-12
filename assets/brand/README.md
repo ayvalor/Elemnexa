@@ -6,7 +6,7 @@ The mark is an AI-generated geometric E with a hexagonal negative-space detail a
 
 `npm run generate:brand` trims transparent padding and exports the same artwork at the sizes needed by the application. It uses Sharp already supplied by Next.js and Playwright already used by the tests. Install Chromium with `npx playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to an installed browser. The social card renders offline with the locally bundled Manrope font. Its displayed hostname follows `SITE_URL` when regenerating; metadata always follows the configured production origin.
 
-- `public/elemnexa-mark.png`: transparent 512px mark shared by the header/footer and install manifest. Next.js serves appropriately sized responsive variants to the website.
+- `public/elemnexa-mark.png`: transparent 512px mark used as the header wordmark’s initial E and by the install manifest. The header retains the complete accessible name “Elemnexa”; Next.js serves appropriately sized responsive variants.
 - `public/icon-192.png`: transparent 192px install icon.
 - `app/icon.png`: transparent 96px browser/search icon.
 - `app/favicon.ico`: transparent 16/32/48px frames.

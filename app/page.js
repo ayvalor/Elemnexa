@@ -87,9 +87,9 @@ function Home() {
         <a className="skip-link" href="#main-content">Skip to content</a>
         <div className="mesh-gradient-bg" aria-hidden="true" />
         <header className="site-header no-print">
-          <a href="#main-content" className="brand" >
-            <BrandMark className="brand-mark" />
-            <span><span className="brand-title">Elemnexa</span><span className="brand-caption">Explore elements. Understand chemistry.</span></span>
+          <a href="#main-content" className="brand" aria-label="Elemnexa — Explore elements. Understand chemistry.">
+            <span className="brand-wordmark"><BrandMark className="brand-mark" /><span className="brand-title"><span className="sr-only">E</span>lemnexa</span></span>
+            <span className="brand-caption">Explore elements. Understand chemistry.</span>
           </a>
           <nav className="header-links" aria-label="Quick navigation">
             <button onClick={exploreElements}>Explore</button>
@@ -109,7 +109,10 @@ function Home() {
               <button type="button" className="hero-action" onClick={exploreElements}>Explore the elements <ArrowRight size={17} aria-hidden="true" /></button>
               <button type="button" className="hero-secondary" onClick={() => openWorkspace("suite")}><FlaskConical size={17} aria-hidden="true" /> Open the lab</button>
             </div>
-            <div className="intro-facts"><span><strong>118</strong> elements to discover</span><span><strong>∞</strong> reasons to be curious</span></div>
+            <dl className="intro-facts" aria-label="A world of chemistry">
+              <div><dt>Elements to discover</dt><dd>118</dd></div>
+              <div><dt>Reasons to be curious</dt><dd><span aria-hidden="true">∞</span><span className="sr-only">Endless</span></dd></div>
+            </dl>
           </div>
           <div className="hero-discovery" aria-label="Featured elements">
             <div className="discovery-grid" aria-hidden="true" />
@@ -130,7 +133,6 @@ function Home() {
                 </button>;
               })}
             </div>
-            <div className="discovery-note"><span className="note-icon"><Atom size={21} aria-hidden="true" /></span><div><strong>Everything starts with an element.</strong><span>Pick one. See where it takes you.</span></div></div>
             <span className="discovery-caption">CLICK AN ELEMENT TO MAKE A DISCOVERY <ArrowUpRight size={13} aria-hidden="true" /></span>
           </div>
         </section>
@@ -159,7 +161,6 @@ function Home() {
         </main>
         <footer className="site-footer no-print">
           <div className="footer-top">
-            <div className="footer-identity"><BrandMark className="footer-mark" /><div><strong>Elemnexa</strong><p>Explore elements. Understand chemistry.</p></div></div>
             <nav className="footer-links" aria-label="Explore and connect">
               <button type="button" onClick={exploreElements}>Explore elements</button>
               <a href="https://github.com/ayvalor/Rasayan-Lab" target="_blank" rel="noopener noreferrer">View source <ArrowUpRight size={14} aria-hidden="true" /></a>
