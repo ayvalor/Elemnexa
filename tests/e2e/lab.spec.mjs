@@ -68,11 +68,13 @@ test('theme changes both styling and persisted preference', async ({ page }) => 
 });
 
 test('disabled browser storage does not break theme controls', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
   await page.addInitScript(() => {
     Storage.prototype.getItem = () => { throw new DOMException('Storage disabled', 'SecurityError'); };
     Storage.prototype.setItem = () => { throw new DOMException('Storage disabled', 'SecurityError'); };
   });
   await openApp(page);
+  await expect(page.locator('html')).not.toHaveClass(/dark/);
   await page.getByRole('button', { name: 'Switch to dark theme' }).click();
   await expect(page.locator('html')).toHaveClass(/dark/);
   await page.getByRole('button', { name: 'Switch to light theme' }).click();
