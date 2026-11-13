@@ -72,8 +72,7 @@
 .dark .periodic-explorer .element-preview { background: linear-gradient(145deg, color-mix(in srgb, var(--card-category-color) 11%, #111b2d), #111b2d 75%); border-color: color-mix(in srgb, var(--card-category-color) 22%, #1e293b); }
 .dark .periodic-explorer .element-preview-name { color: #f1f5f9; }
 .dark .periodic-explorer .element-preview-phase, .dark .periodic-explorer .element-preview-family, .dark .periodic-explorer .element-preview-bottom { color: #a5b4c9; }
-@media (max-width: 767px) { .periodic-explorer .element-preview-grid { display: grid; } }
-@media (min-width: 640px) { .periodic-explorer .element-preview-grid { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 640px) { .periodic-explorer .element-preview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (hover: hover) and (pointer: fine) {
   .periodic-explorer .element-card.element-tile:enabled:hover, .periodic-explorer .element-preview:hover { z-index: 2; }
   .periodic-explorer .element-card.element-tile:enabled:hover::after, .periodic-explorer .element-preview:hover::after { opacity: 1; }
@@ -117,7 +116,13 @@
 .periodic-explorer[data-view="cards"] .element-preview-grid { display: grid; }
 .periodic-explorer[data-view="table"] .table-view { display: block; }
 .periodic-explorer[data-view="table"] .element-preview-grid { display: none; }
-@media (max-width: 767px) { .periodic-explorer[data-view="auto"] .table-view { display: none; } .periodic-explorer[data-view="auto"] .view-switch button:last-child { color: var(--accent); background: var(--accent-soft); } }
+/* Resolve both layouts together so automatic mode always shows one, including
+   before hydration. Column-count breakpoints must not change visibility. */
+@media (max-width: 767px) {
+  .periodic-explorer[data-view="auto"] .table-view { display: none; }
+  .periodic-explorer[data-view="auto"] .element-preview-grid { display: grid; }
+  .periodic-explorer[data-view="auto"] .view-switch button:last-child { color: var(--accent); background: var(--accent-soft); }
+}
 @media (min-width: 768px) { .periodic-explorer[data-view="auto"] .view-switch button:first-child { color: var(--accent); background: var(--accent-soft); } .periodic-explorer[data-view="cards"] .element-preview-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1100px) { .periodic-explorer[data-view="cards"] .element-preview-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 
