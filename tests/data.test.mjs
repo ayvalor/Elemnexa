@@ -32,6 +32,16 @@ test('representative isotopes are explicitly separate from average atomic weight
   assert.equal(get('U').massType,'standard atomic weight');
 });
 
+test('synthetic-only classification excludes naturally occurring Tc, Pm, Np and Pu', () => {
+  assert.deepEqual(elementsData.filter(element => element.synthetic).map(element => element.number),
+    Array.from({ length: 24 }, (_, index) => index + 95));
+  for (const symbol of ['Tc', 'Pm', 'Np', 'Pu']) {
+    const element = elementsData.find(element => element.symbol === symbol);
+    assert.equal(element.synthetic, false, symbol);
+    assert.equal(element.massType, 'representative isotope mass number', symbol);
+  }
+});
+
 test('exceptional configurations and predicted physical properties are not fabricated',()=>{
   const get=s=>elementsData.find(e=>e.symbol===s);
   assert.equal(get('Cr').shellConfig,'2, 8, 13, 1');

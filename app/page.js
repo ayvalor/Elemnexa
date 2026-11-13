@@ -3,7 +3,7 @@
 import { useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import BrandMark from "../components/BrandMark";
-import { Table, Beaker, FileSpreadsheet, Atom, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle, Sparkles, Shuffle, BookOpen, CodeXml } from "lucide-react";
+import { Table, Beaker, FileSpreadsheet, Sun, Moon, ArrowUpRight, ArrowRight, FlaskConical, MessageCircle, Shuffle, CodeXml } from "lucide-react";
 import PeriodicTable from "../components/PeriodicTable";
 import ElementDetailsProvider, { useOpenElement } from "../components/ElementDetailsProvider";
 import { elementsData } from "../data/element-index";
@@ -20,18 +20,15 @@ let memoryTheme;
 function readTheme() {
   let saved = memoryTheme;
   try { if (saved === undefined) saved = localStorage.getItem("theme"); } catch { /* Storage may be disabled. */ }
-  return saved === "dark" || saved === "light" ? saved : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return saved === "dark" ? "dark" : "light";
 }
 function subscribeTheme(callback) {
-  const media = matchMedia("(prefers-color-scheme: dark)");
   const syncStorage = () => { memoryTheme = undefined; callback(); };
   window.addEventListener("storage", syncStorage);
   window.addEventListener("elemnexa-theme", callback);
-  media.addEventListener("change", callback);
   return () => {
     window.removeEventListener("storage", syncStorage);
     window.removeEventListener("elemnexa-theme", callback);
-    media.removeEventListener("change", callback);
   };
 }
 const serverTheme = () => "light";
@@ -49,7 +46,10 @@ function Home() {
   const [visited, setVisited] = useState(["table"]);
   const openElement = useOpenElement();
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
-  useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme === "dark" ? "#0b1418" : "#f7f9f8");
+  }, [theme]);
   const selectTab = (id) => {
     setActiveTab(id);
     setVisited(previous => previous.includes(id) ? previous : [...previous, id]);
@@ -92,11 +92,11 @@ function Home() {
             <span className="brand-caption">Explore elements. Understand chemistry.</span>
           </a>
           <nav className="header-links" aria-label="Quick navigation">
-            <button onClick={exploreElements}>Explore</button>
-            <button onClick={() => openWorkspace("suite")}>Chemistry tools</button>
-            <button onClick={() => openWorkspace("worksheet")}>Practice <ArrowUpRight size={14} aria-hidden="true" /></button>
+            <button type="button" aria-current={activeTab === "table" ? "location" : undefined} onClick={exploreElements}><Table size={16} aria-hidden="true" />Explore</button>
+            <button type="button" aria-current={activeTab === "suite" ? "location" : undefined} onClick={() => openWorkspace("suite")}><FlaskConical size={16} aria-hidden="true" />Chemistry tools</button>
+            <button type="button" aria-current={activeTab === "worksheet" ? "location" : undefined} onClick={() => openWorkspace("worksheet")}><FileSpreadsheet size={16} aria-hidden="true" />Practice</button>
           </nav>
-          <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} title="Toggle Dark/Light Mode">
+          <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}>
             {theme === "dark" ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
           </button>
         </header>
@@ -129,12 +129,6 @@ function Home() {
             </div>
           </div>
         </section>
-        <div className="learning-strip no-print">
-          <span><span className="strip-icon mint"><Atom size={18} aria-hidden="true" /></span> Big ideas, down to the atom.</span>
-          <span><BookOpen size={16} aria-hidden="true" /> Learn by exploring</span>
-          <span><FlaskConical size={16} aria-hidden="true" /> Experiment with ideas</span>
-          <span><Sparkles size={16} aria-hidden="true" /> Make the connection</span>
-        </div>
         <nav aria-label="Lab sections" className="lab-navigation no-print">
           <div role="tablist" aria-label="Chemistry workspaces" className="lab-tabs">
             {tabs.map(({ id, label, icon: Icon }, index) => (

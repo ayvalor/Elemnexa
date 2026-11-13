@@ -15,12 +15,9 @@ export const metadata = {
   twitter: { card: "summary_large_image", title: "Elemnexa", description: siteDescription, ...(siteUrl ? { images: [`${siteUrl}/elemnexa-social.png`] } : {}) },
   robots: { index: true, follow: true },
 };
-export const viewport = { width: "device-width", initialScale: 1, themeColor: [
-  { media: "(prefers-color-scheme: light)", color: "#f7f9f8" },
-  { media: "(prefers-color-scheme: dark)", color: "#0b1418" },
-] };
-// Constant, trusted content only. Preserve existing users' saved theme.
-const themeScript = `(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}var d=t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d)})()`;
+export const viewport = { width: "device-width", initialScale: 1, themeColor: "#f7f9f8" };
+// Start in light mode unless the user explicitly saved a dark preference.
+const themeScript = `(function(){var t;try{t=localStorage.getItem('theme')}catch(e){}document.documentElement.classList.toggle('dark',t==='dark')})()`;
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>

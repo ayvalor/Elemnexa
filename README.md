@@ -68,7 +68,7 @@ See [the repair and validation notes](docs/REPAIR-NOTES.md). Keep the lockfile c
 ## Design and interaction
 
 - A shared teal, violet, and warm neutral palette with dedicated light/dark tokens in `app/globals.css`. Element-family colors are consistent across the legend, cards, and detail panels.
-- Persistent system-aware theme, reduced-motion support, focus outlines, keyboard tabs, modal focus containment/restoration, and screen-reader announcements.
+- Light theme by default with a persistent manual light/dark choice, reduced-motion support, focus outlines, keyboard tabs, modal focus containment/restoration, and screen-reader announcements.
 - The table preserves scientific positions when filtering. Mobile starts with readable cards; the view switch makes both layouts available on every screen. Press `/` outside a text field to search. **Surprise me** opens one of the 118 element stories.
 - Local fonts and optimized artwork, static prerendering, lazy-loaded tools and details, memoized tiles, and CSS transitions keep the app independent of remote services. No analytics, accounts, or tracking cookies are included.
 - The generated teal–violet E forms the first letter of the header wordmark and is shared by the icons and social card. See [the brand source and regeneration notes](assets/brand/README.md); `npm run generate:brand` exports all sizes from the original transparent artwork.

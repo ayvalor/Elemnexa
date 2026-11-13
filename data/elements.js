@@ -1769,7 +1769,8 @@ for (const element of elementsData) {
   element.valenceNote = element.block === "d" || element.block === "f"
     ? "Transition and inner-transition elements can use electrons from more than one shell in bonding. Valence depends on chemical context."
     : "Outer-shell electrons for a neutral atom; this is not an oxidation state or ion charge.";
-  element.synthetic = element.number === 43 || element.number === 61 || element.number >= 93;
+  // Tc, Pm, Np and Pu occur naturally in trace amounts; exclude them from the synthetic-only group.
+  element.synthetic = element.number >= 95;
   if (element.phase === "Synthetic") element.phase = "Unknown";
   element.phaseNote = element.phase === "Unknown" ? "Bulk phase has not been established experimentally." : "Room-temperature reference phase; allotropes and pressure can change properties.";
   element.dataCompleteness = populatedNumbers.has(element.number) ? "Selected educational properties; conditions and conventions matter." : "Basic reference data; further physical and historical properties are not yet compiled.";
